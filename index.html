@@ -14,19 +14,38 @@
 </head>
 <body>
 
-  <!-- the nook: lit by fairy lights; the cauldron's fire is kindled while a recipe is open -->
+  <!-- the room: a chimney breast above the fireplace, candles on the mantel, a sleepy spider in the corner.
+       The cauldron burns low until a recipe is opened. -->
   <div class="scene" aria-hidden="true">
     <div class="wall wall-cool"></div>
     <div class="wall wall-lit"></div>
     <div class="lamp"></div>
-    <div class="lights" id="lights"></div>
 
-    <div class="hearth">
-      <div class="px pot"></div>
-      <div class="fire-glow"></div>
-      <div class="fire"><div class="px flames"></div></div>
-      <div class="px logs"></div>
-      <i class="spark k1"></i><i class="spark k2"></i><i class="spark k3"></i><i class="spark k4"></i><i class="spark k5"></i>
+    <div class="breast"><div class="bricks bricks-cool"></div><div class="bricks bricks-lit"></div></div>
+
+    <div class="web px"></div>
+    <div class="spider-rig">
+      <div class="thread"></div>
+      <div class="px spider"></div>
+      <div class="cglow spider-glow"></div>
+    </div>
+
+    <div class="mantel" id="mantel"><div class="beam"></div></div>
+
+    <div class="fireplace">
+      <div class="px fp-back"></div>
+      <div class="fp-lit"></div>
+      <div class="hearth">
+        <div class="px pot"></div>
+        <div class="fire-glow"></div>
+        <div class="fire">
+          <div class="px flames-low"></div>
+          <div class="px flames"></div>
+        </div>
+        <div class="px logs"></div>
+        <i class="spark k1"></i><i class="spark k2"></i><i class="spark k3"></i><i class="spark k4"></i><i class="spark k5"></i>
+      </div>
+      <div class="px fp-front"></div>
     </div>
 
     <div class="glow-wrap"><div class="glow"></div></div>
@@ -38,9 +57,10 @@
     <div class="px cat" role="img" aria-label="A happy black and white cat"></div>
   </header>
 
-  <main>
-    <p class="lede">little pages from a well-loved book</p>
-    <section id="grid" class="grid" aria-label="Recipes"></section>
+  <main class="shelf-wrap" id="shelfWrap">
+    <button class="shelf-arrow up" id="shelfUp" type="button" aria-label="Scroll the recipes up" hidden><svg viewBox="0 0 10 6" shape-rendering="crispEdges" aria-hidden="true"><path d="M4 0h2v1h1v1h1v1h1v1h1v2H0V4h1V3h1V2h1V1h1z"/></svg></button>
+    <section class="shelf" id="shelf" aria-label="Recipes"><div id="grid" class="grid"></div></section>
+    <button class="shelf-arrow down" id="shelfDown" type="button" aria-label="Scroll the recipes down" hidden><svg viewBox="0 0 10 6" shape-rendering="crispEdges" aria-hidden="true"><path d="M0 0h10v2H9v1H8v1H7v1H6v1H4V5H3V4H2V3H1V2H0z"/></svg></button>
   </main>
 
   <button class="backbtn" id="back" type="button"><svg viewBox="0 0 8 10" shape-rendering="crispEdges" aria-hidden="true"><path d="M5 0h2v2H5zM3 2h2v2H3zM1 4h2v2H1zM3 6h2v2H3zM5 8h2v2H5z"/></svg>All recipes</button>

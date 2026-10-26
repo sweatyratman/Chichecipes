@@ -8,54 +8,80 @@
   --olde: 'IM Fell English', 'Iowan Old Style', Georgia, serif;
   --uncial: 'Uncial Antiqua', 'IM Fell English', Georgia, serif;
   /* pixel scales, set from app.js */
-  --cps: 3; --hps: 4; --wps: 3; --dps: 3;
+  --cps: 3; --hps: 4; --wps: 3; --dps: 3; --sps: 3;
+  --wb: min(calc(100vw - 12px), 700px);
   --noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .42  0 0 0 0 .3  0 0 0 0 .14  0 0 0 .12 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   --fibres: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='800'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.012 .02' numOctaves='3' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .55  0 0 0 0 .36  0 0 0 0 .14  0 0 0 .6 -.14'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>");
 }
 
 * { box-sizing: border-box; }
-html { scrollbar-gutter: stable; }
+html, body { height: 100%; overflow: hidden; }
 body { margin: 0; min-height: 100vh; font-family: var(--olde); color: var(--ink); background: #1d110b; -webkit-tap-highlight-color: transparent; }
 body.locked { overflow: hidden; }
 button { font: inherit; color: inherit; }
 .px { position: absolute; background-repeat: no-repeat; image-rendering: pixelated; }
 
-/* ───────────── the nook ───────────── */
+/* ───────────── the room ───────────── */
 .scene { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; contain: strict; }
-.wall { position: absolute; inset: 0; background-size: 256px 256px; image-rendering: pixelated; transition: opacity 1.6s ease; }
+.wall { position: absolute; inset: 0; background-size: calc(32px * var(--hps)); image-rendering: pixelated; transition: opacity 1.6s ease; }
 .wall-cool { background-image: var(--img-wall-dusk); }
 .wall-lit { background-image: var(--img-wall-lit); opacity: 0; }
 body.cooking .wall-lit { opacity: 1; }
 .lamp {
   position: absolute; inset: 0;
   background:
-    radial-gradient(ellipse 60% 38% at 50% 0%, rgba(255, 196, 120, .26), transparent 72%),
-    radial-gradient(ellipse 40% 30% at 12% 6%, rgba(255, 180, 100, .12), transparent 70%),
-    radial-gradient(ellipse 40% 30% at 88% 6%, rgba(255, 180, 100, .12), transparent 70%);
+    radial-gradient(ellipse 55% 45% at 50% 100%, rgba(255, 170, 80, .2), transparent 70%),
+    radial-gradient(ellipse 40% 30% at 90% 0%, rgba(255, 190, 110, .14), transparent 70%);
 }
-.vignette { position: absolute; inset: 0; background: radial-gradient(ellipse 100% 90% at 50% 45%, transparent 55%, rgba(8, 3, 1, .6)); }
+.vignette { position: absolute; inset: 0; background: radial-gradient(ellipse 100% 90% at 50% 50%, transparent 55%, rgba(6, 3, 8, .6)); }
 
-.lights { position: absolute; left: 0; right: 0; top: 0; height: 84px; }
-.lights canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
-.bulb {
-  position: absolute; width: 44px; height: 44px; margin: -14px 0 0 -22px; border-radius: 50%; pointer-events: none;
-  background: radial-gradient(circle, rgba(255, 200, 100, .55), rgba(255, 160, 60, .16) 50%, transparent 72%);
-  animation: twinkle 3.4s ease-in-out infinite; will-change: opacity;
-}
-@keyframes twinkle { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
+/* the chimney breast the recipes are pinned to */
+.breast { position: absolute; left: 50%; top: 0; bottom: calc(70px * var(--hps)); width: var(--wb); transform: translateX(-50%); box-shadow: 0 0 0 calc(1px * var(--hps)) #140a08, 0 0 40px rgba(0, 0, 0, .5); }
+.bricks { position: absolute; inset: 0; background-size: calc(32px * var(--hps)); image-rendering: pixelated; transition: opacity 1.6s ease; }
+.bricks-cool { background-image: var(--img-bricks-dusk); }
+.bricks-lit { background-image: var(--img-bricks-lit); opacity: 0; }
+body.cooking .bricks-lit { opacity: 1; }
+.breast::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgba(8, 4, 10, .55), rgba(8, 4, 10, .12) 40%, transparent 70%), linear-gradient(90deg, rgba(0, 0, 0, .4), transparent 12%, transparent 88%, rgba(0, 0, 0, .4)); }
 
-/* hearth + cauldron (pixel art, scaled by --hps) */
-.hearth { position: absolute; left: 50%; bottom: 0; width: calc(56px * var(--hps)); height: calc(43px * var(--hps)); transform: translateX(-50%); }
-.pot { left: calc(2px * var(--hps)); top: 0; width: calc(52px * var(--hps)); height: calc(30px * var(--hps)); background-image: var(--img-pot); background-size: calc(104px * var(--hps)) calc(30px * var(--hps)); }
-body.cooking .pot { animation: potFrames .9s steps(2) infinite; }
+.mantel { position: absolute; left: 50%; bottom: calc(62px * var(--hps)); width: calc(var(--wb) + 16px * var(--hps)); height: calc(8px * var(--hps)); transform: translateX(-50%); }
+.beam { position: absolute; inset: 0; background: var(--img-mantel) 0 0 / calc(16px * var(--hps)) calc(8px * var(--hps)) repeat-x; image-rendering: pixelated; box-shadow: 0 calc(2px * var(--hps)) 0 rgba(0, 0, 0, .4); }
+.cndl { position: absolute; bottom: 100%; background-repeat: no-repeat; image-rendering: pixelated; animation: candleFrames .8s steps(2) infinite; }
+.cndl::before { content: ''; position: absolute; left: 50%; top: calc(3px * var(--hps)); width: calc(44px * var(--hps)); height: calc(44px * var(--hps)); margin: calc(-22px * var(--hps)) 0 0 calc(-22px * var(--hps)); background: radial-gradient(circle, rgba(255, 200, 100, .5), rgba(255, 160, 60, .14) 50%, transparent 72%); animation: twinkle 2.6s ease-in-out infinite; pointer-events: none; }
+.cndl.tall { width: calc(7px * var(--hps)); height: calc(23px * var(--hps)); background-image: var(--img-candle-tall); background-size: calc(14px * var(--hps)) calc(23px * var(--hps)); }
+.cndl.mid { width: calc(6px * var(--hps)); height: calc(19px * var(--hps)); background-image: var(--img-candle-mid); background-size: calc(12px * var(--hps)) calc(19px * var(--hps)); }
+.cndl.stub { width: calc(9px * var(--hps)); height: calc(16px * var(--hps)); background-image: var(--img-candle-stub); background-size: calc(18px * var(--hps)) calc(16px * var(--hps)); }
+.cndl.c1 { left: 4%; } .cndl.c2 { left: calc(4% + 10px * var(--hps)); animation-delay: -.3s; } .cndl.c3 { right: calc(4% + 10px * var(--hps)); animation-delay: -.5s; } .cndl.c4 { right: 4%; animation-delay: -.2s; }
+.cndl.c2::before { animation-delay: -1s; } .cndl.c3::before { animation-delay: -.5s; } .cndl.c4::before { animation-delay: -1.7s; }
+@keyframes candleFrames { to { background-position-x: 100%; } }
+@keyframes twinkle { 0%, 100% { opacity: .7; } 50% { opacity: 1; } }
+
+/* the sleepy spider */
+.web { right: 0; top: 0; width: calc(44px * var(--sps)); height: calc(44px * var(--sps)); background-image: var(--img-web); background-size: 100% 100%; opacity: .6; }
+.spider-rig { position: absolute; top: 0; right: calc(2px * var(--sps)); width: calc(26px * var(--sps)); }
+.thread { width: calc(1px * var(--sps)); height: calc(26px * var(--sps)); margin-left: calc(14px * var(--sps)); background: #cdc6dd; opacity: .85; animation: dangle 5s steps(10) infinite alternate; }
+@keyframes dangle { to { height: calc(42px * var(--sps)); } }
+.spider { position: relative; width: calc(26px * var(--sps)); height: calc(32px * var(--sps)); margin-top: calc(-6px * var(--sps)); background-image: var(--img-spider); background-size: calc(52px * var(--sps)) calc(32px * var(--sps)); animation: spiderFrames .9s steps(2) infinite; }
+.spider::before { content: ''; position: absolute; left: calc(1px * var(--sps)); top: calc(7px * var(--sps)); width: calc(40px * var(--sps)); height: calc(40px * var(--sps)); margin: calc(-20px * var(--sps)) 0 0 calc(-20px * var(--sps)); background: radial-gradient(circle, rgba(255, 200, 100, .45), rgba(255, 160, 60, .12) 50%, transparent 72%); animation: twinkle 2.2s ease-in-out infinite; }
+@keyframes spiderFrames { to { background-position-x: calc(-52px * var(--sps)); } }
+
+/* the fireplace + cauldron (pixel art, scaled by --hps). The fire burns low until a recipe is open. */
+.fireplace { position: absolute; left: 50%; bottom: 0; width: calc(120px * var(--hps)); height: calc(62px * var(--hps)); transform: translateX(-50%); }
+.fp-back { left: calc(30px * var(--hps)); top: calc(14px * var(--hps)); width: calc(60px * var(--hps)); height: calc(44px * var(--hps)); background-image: var(--img-firebox); background-size: 100% 100%; }
+.fp-front { left: 0; top: 0; width: 100%; height: 100%; background-image: var(--img-surround); background-size: 100% 100%; }
+.fp-lit { position: absolute; left: calc(30px * var(--hps)); top: calc(14px * var(--hps)); width: calc(60px * var(--hps)); height: calc(44px * var(--hps)); background: radial-gradient(ellipse at 50% 90%, rgba(255, 150, 50, .6), rgba(255, 110, 30, .2) 55%, transparent 80%); opacity: .3; transition: opacity 1.2s; }
+body.cooking .fp-lit { opacity: 1; }
+.hearth { position: absolute; left: calc(32px * var(--hps)); top: calc(15px * var(--hps)); width: calc(56px * var(--hps)); height: calc(43px * var(--hps)); }
+.pot { left: calc(2px * var(--hps)); top: 0; width: calc(52px * var(--hps)); height: calc(30px * var(--hps)); background-image: var(--img-pot); background-size: calc(104px * var(--hps)) calc(30px * var(--hps)); animation: potFrames 2.4s steps(2) infinite; }
+body.cooking .pot { animation-duration: .9s; }
 @keyframes potFrames { to { background-position-x: calc(-104px * var(--hps)); } }
 .logs { left: 0; top: calc(33px * var(--hps)); width: calc(56px * var(--hps)); height: calc(10px * var(--hps)); background-image: var(--img-logs); background-size: 100% 100%; }
-.fire { position: absolute; left: calc(10px * var(--hps)); top: calc(19px * var(--hps)); width: calc(36px * var(--hps)); height: calc(24px * var(--hps)); opacity: 0; transform: scaleY(.05); transform-origin: 50% 100%; transition: opacity .7s steps(7), transform 1s steps(10); will-change: transform, opacity; }
-body.cooking .fire { opacity: 1; transform: none; }
-.flames { inset: 0; background-image: var(--img-fire); background-size: calc(108px * var(--hps)) calc(24px * var(--hps)); animation: flameFrames .6s steps(3) infinite paused; }
-body.cooking .flames { animation-play-state: running; }
+.fire { position: absolute; left: calc(10px * var(--hps)); top: calc(19px * var(--hps)); width: calc(36px * var(--hps)); height: calc(24px * var(--hps)); }
+.flames-low { inset: 0; background-image: var(--img-fire-low); background-size: calc(108px * var(--hps)) calc(24px * var(--hps)); animation: flameFrames 1.3s steps(3) infinite; transition: opacity .6s steps(6); }
+body.cooking .flames-low { opacity: 0; }
+.flames { inset: 0; background-image: var(--img-fire); background-size: calc(108px * var(--hps)) calc(24px * var(--hps)); animation: flameFrames .6s steps(3) infinite paused; opacity: 0; transform: scaleY(.2); transform-origin: 50% 100%; transition: opacity .7s steps(7), transform 1s steps(10); will-change: transform, opacity; }
+body.cooking .flames { opacity: 1; transform: none; animation-play-state: running; }
 @keyframes flameFrames { to { background-position-x: calc(-108px * var(--hps)); } }
-.fire-glow { position: absolute; left: -30%; right: -30%; bottom: -10%; height: 120%; background: radial-gradient(ellipse at 50% 75%, rgba(255, 170, 70, .55), rgba(255, 120, 30, .16) 50%, transparent 72%); opacity: 0; transition: opacity 1.2s; }
+.fire-glow { position: absolute; left: -30%; right: -30%; bottom: -10%; height: 120%; background: radial-gradient(ellipse at 50% 75%, rgba(255, 170, 70, .55), rgba(255, 120, 30, .16) 50%, transparent 72%); opacity: .35; transition: opacity 1.2s; }
 body.cooking .fire-glow { opacity: 1; }
 .spark { position: absolute; left: 50%; bottom: calc(16px * var(--hps)); width: calc(1px * var(--hps)); height: calc(1px * var(--hps)); background: #ffc46b; box-shadow: 0 0 0 calc(.5px * var(--hps)) rgba(255, 150, 60, .35); opacity: 0; }
 body.cooking .spark { animation: rise 3.2s steps(16) infinite; }
@@ -66,7 +92,7 @@ body.cooking .spark { animation: rise 3.2s steps(16) infinite; }
 .k5 { margin-left: -18%; animation-delay: 2.1s; animation-duration: 4.2s; }
 @keyframes rise { 0% { transform: translate(0, 0); opacity: 0; } 10% { opacity: 1; } 100% { transform: translate(24px, -260px); opacity: 0; } }
 
-.glow-wrap { position: absolute; inset: 0; opacity: 0; transition: opacity 1.6s ease; }
+.glow-wrap { position: absolute; inset: 0; opacity: .3; transition: opacity 1.6s ease; }
 body.cooking .glow-wrap { opacity: 1; }
 .glow { position: absolute; inset: 0; background: radial-gradient(ellipse 70% 55% at 50% 100%, rgba(255, 150, 55, .3), rgba(255, 110, 30, .1) 55%, transparent 80%); animation: pulse 2.6s ease-in-out infinite alternate; will-change: opacity; }
 @keyframes pulse { from { opacity: .8; } to { opacity: 1; } }
@@ -81,8 +107,6 @@ body.cooking .glow-wrap { opacity: 1; }
 .cat:hover { animation-duration: .5s; }
 @keyframes catFrames { to { background-position-x: calc(-62px * var(--cps)); } }
 
-main { position: relative; z-index: 2; max-width: 820px; margin: 0 auto; padding: 0 clamp(14px, 4vw, 24px) 40px; }
-.lede { margin: 12px 0 30px; text-align: center; font-family: var(--olde); font-style: italic; font-size: 1.15rem; letter-spacing: .03em; color: #e6c99d; opacity: .9; }
 
 /* ───────────── paper: aged, foxed, singed at the edges ───────────── */
 .paper {
@@ -100,31 +124,34 @@ main { position: relative; z-index: 2; max-width: 820px; margin: 0 auto; padding
 /* ───────────── the shelf of folded recipe cards ───────────── */
 .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(26px, 5vw, 42px) clamp(14px, 4vw, 32px); }
 .card {
-  --rot: 0deg;
-  position: relative; display: flex; align-items: center; gap: clamp(8px, 2.4vw, 18px);
+  position: relative; display: flex; align-items: center; width: 100%; gap: clamp(8px, 2.4vw, 18px);
   aspect-ratio: 1 / var(--r, .42); padding: 0 clamp(10px, 3vw, 22px);
   border: 0; border-radius: 0; cursor: pointer; text-align: left;
   transform: rotate(var(--rot)); transition: transform .3s steps(4);
 }
-.card:nth-child(4n+1) { --rot: -1.2deg; }
-.card:nth-child(4n+2) { --rot: 1deg; }
-.card:nth-child(4n+3) { --rot: .8deg; }
-.card:nth-child(4n+4) { --rot: -.7deg; }
+.slot:nth-child(4n+1) { --rot: -1.2deg; }
+.slot:nth-child(4n+2) { --rot: 1deg; }
+.slot:nth-child(4n+3) { --rot: .8deg; }
+.slot:nth-child(4n+4) { --rot: -.7deg; }
 .card::after { /* the folded edge along the bottom */
   content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 24%; pointer-events: none;
   background: linear-gradient(to top, rgba(100, 56, 16, .34), rgba(100, 56, 16, .1) 55%, transparent); border-bottom: 2px solid rgba(255, 240, 200, .5);
 }
-.card::before { /* pushpin */
-  content: ''; position: absolute; top: calc(-3px * var(--dps)); left: 50%; width: calc(8px * var(--dps)); height: calc(8px * var(--dps)); margin-left: calc(-4px * var(--dps)); z-index: 2;
-  background: var(--img-pin) center / 100% 100% no-repeat; image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(20, 6, 0, .45));
-}
+.slot { position: relative; scroll-snap-align: start; }
+.pin { position: absolute; z-index: 3; top: calc(-3px * var(--dps)); left: 50%; width: calc(8px * var(--dps)); height: calc(8px * var(--dps)); margin-left: calc(-4px * var(--dps)); image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(20, 6, 0, .45)); pointer-events: none; }
+.hole { position: absolute; z-index: 0; top: calc(1px * var(--dps)); left: 50%; width: calc(2px * var(--dps)); height: calc(2px * var(--dps)); margin-left: calc(-1px * var(--dps)); background: #140a08; opacity: 0; }
+.slot.open .hole { opacity: 1; }
+.slot.open .pin { animation: pinOut .5s steps(5) forwards; }
+.slot.pin-in .pin { animation: pinIn .55s steps(5); }
+@keyframes pinOut { 40% { transform: translateY(calc(-6px * var(--dps))) scale(1.25); } 100% { transform: translateY(calc(-26px * var(--dps))) scale(1.5) rotate(25deg); opacity: 0; } }
+@keyframes pinIn { 0% { transform: translateY(calc(-16px * var(--dps))) scale(1.45) rotate(-20deg); } 70% { transform: translateY(calc(-3px * var(--dps))) scale(1.12); } }
 .card:hover, .card:focus-visible { transform: rotate(0deg) translateY(-5px); }
 .card:focus-visible { outline: 3px solid #ffcf7a; outline-offset: 5px; }
 .card.pressed { transition: none; transform: rotate(var(--rot)); }
 .card.lifted { visibility: hidden; }
 img.doodle { flex: none; width: calc(var(--nw, 26) * 1px * var(--dps)); height: auto; image-rendering: pixelated; }
 .c-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.c-title { font-family: var(--uncial); font-size: clamp(.98rem, 2.9vw, 1.4rem); line-height: 1.15; color: var(--ink); }
+.c-title { font-family: var(--uncial); font-size: clamp(.82rem, 2.9vw, 1.4rem); line-height: 1.15; color: var(--ink); }
 .card.blank { cursor: default; background: none; box-shadow: none; border: 3px dashed rgba(240, 210, 160, .2); justify-content: center; }
 .card.blank::before, .card.blank::after { display: none; }
 .card.blank:hover { transform: rotate(var(--rot)); }
@@ -208,7 +235,7 @@ img.orn { display: block; width: calc(40px * var(--dps)); max-width: 72%; height
 .quill img { position: static; width: 100%; height: 100%; display: block; image-rendering: pixelated; }
 
 /* ───────────── pixel buttons ───────────── */
-.backbtn, .tab {
+.backbtn, .tab, .shelf-arrow {
   clip-path: polygon(0 4px, 4px 4px, 4px 0, calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px));
   font-family: var(--pixel); font-weight: 700; color: #fff0cf; border: 0; cursor: pointer;
   background: linear-gradient(#b57a44 0 50%, #9d6535 50%);
@@ -217,7 +244,7 @@ img.orn { display: block; width: calc(40px * var(--dps)); max-width: 72%; height
 .backbtn { position: fixed; z-index: 40; top: 14px; left: 14px; display: flex; align-items: center; gap: 10px; padding: 14px 24px 14px 18px; font-size: 1.2rem; text-shadow: 0 2px 0 #3a1e0c; opacity: 0; transform: translateX(-12px); pointer-events: none; transition: opacity .5s steps(5), transform .5s steps(5); }
 .backbtn svg { width: 16px; height: 20px; fill: currentColor; }
 .backbtn.on { opacity: 1; transform: none; pointer-events: auto; transition-delay: .5s; }
-.backbtn:hover, .tab:hover { filter: brightness(1.12); }
+.backbtn:hover, .tab:hover, .shelf-arrow:hover { filter: brightness(1.12); }
 .backbtn:focus-visible, .tab:focus-visible { outline: 3px solid #ffcf7a; outline-offset: 2px; }
 
 .scalebar { position: absolute; top: 56px; right: 8px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; pointer-events: auto; filter: drop-shadow(0 4px 0 rgba(20, 8, 0, .55)); }
@@ -240,3 +267,20 @@ img.orn { display: block; width: calc(40px * var(--dps)); max-width: 72%; height
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; transition-delay: 0s !important; }
 }
+
+/* ───────────── the shelf: a scrolling pinboard on the chimney breast ───────────── */
+.shelf-wrap { position: fixed; z-index: 2; left: 50%; transform: translateX(-50%); width: calc(var(--wb) - 16px * var(--hps)); top: var(--shelf-top, 150px); height: var(--shelf-h, 340px); }
+.shelf {
+  position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain; scroll-snap-type: y proximity; scroll-padding-top: calc(6px * var(--dps)); scrollbar-width: none;
+  padding: calc(6px * var(--dps)) clamp(6px, 2vw, 16px) 18px;
+  -webkit-mask-image: linear-gradient(transparent 0, #000 4px, #000 calc(100% - 26px), transparent 100%);
+  mask-image: linear-gradient(transparent 0, #000 4px, #000 calc(100% - 26px), transparent 100%);
+}
+.shelf::-webkit-scrollbar { display: none; }
+.shelf-arrow { position: absolute; z-index: 3; left: 50%; width: 46px; height: 30px; margin-left: -23px; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.shelf-arrow[hidden] { display: none; }
+.shelf-arrow svg { width: 20px; height: 12px; fill: currentColor; }
+.shelf-arrow.up { top: -14px; animation: nudgeUp 1.2s steps(2) infinite; }
+.shelf-arrow.down { bottom: -6px; animation: nudgeDown 1.2s steps(2) infinite; }
+@keyframes nudgeUp { 50% { transform: translateY(-4px); } }
+@keyframes nudgeDown { 50% { transform: translateY(4px); } }

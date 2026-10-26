@@ -66,19 +66,24 @@
   const prettyScale = n => String(Math.round(n * 100) / 100);
 
   /* ───────── pixel art ───────── */
-  const PS = { cps: 3, hps: 4, wps: 3, dps: 3 };
+  const PS = { cps: 3, hps: 4, wps: 3, dps: 3, sps: 3 };
   const rootStyle = document.documentElement.style;
   const S = window.Sprites;
   const IMG = {};
 
   function loadSprites() {
-    IMG.cat = S.cat(); IMG.pot = S.pot(); IMG.fire = S.fire(); IMG.logs = S.logs();
+    IMG.cat = S.cat(); IMG.pot = S.pot(); IMG.fire = S.fire(); IMG.fireLow = S.fire(true); IMG.logs = S.logs();
     IMG.well = S.well(); IMG.quill = S.quill(); IMG.pin = S.pin(); IMG.flourish = S.flourish(); IMG.blot = S.blot();
     IMG.corner = S.corner();
     IMG.doodles = { iceCream: { src: S.iceCream(), w: 26 } };
+    const wax = ['#fff4dc', '#f1e1bf', '#cdb88e'];
     const set = (k, v) => rootStyle.setProperty(k, `url(${v})`);
-    set('--img-cat', IMG.cat); set('--img-pot', IMG.pot); set('--img-fire', IMG.fire); set('--img-logs', IMG.logs); set('--img-pin', IMG.pin);
-    set('--img-wall-dusk', S.wallDusk()); set('--img-wall-lit', S.wallLit());
+    set('--img-cat', IMG.cat); set('--img-pot', IMG.pot); set('--img-fire', IMG.fire); set('--img-fire-low', IMG.fireLow); set('--img-logs', IMG.logs);
+    set('--img-wall-dusk', S.wallDusk2()); set('--img-wall-lit', S.wallLit2());
+    set('--img-bricks-dusk', S.bricksDusk()); set('--img-bricks-lit', S.bricksLit());
+    set('--img-mantel', S.mantelTile()); set('--img-surround', S.surround()); set('--img-firebox', S.firebox());
+    set('--img-candle-tall', S.candle(4, 11, 7, wax)); set('--img-candle-mid', S.candle(3, 7, 6, wax)); set('--img-candle-stub', S.candle(5, 4, 9, wax));
+    set('--img-web', S.web()); set('--img-spider', S.spider());
     Object.entries(IMG.corner).forEach(([k, v]) => set(`--img-c-${k}`, v));
   }
 
@@ -88,44 +93,15 @@
     PS.cps = vw >= 520 ? 3 : 2;
     PS.wps = vw >= 520 ? 3 : 2;
     PS.dps = vw >= 520 ? 3 : 2;
+    PS.sps = vw >= 520 ? 3 : 2;
     Object.entries(PS).forEach(([k, v]) => rootStyle.setProperty(`--${k}`, v));
   }
 
-  /* ───────── fairy lights (pixel wire + bulbs) ───────── */
-  const BULB_COLOURS = ['#ffd36b', '#ff9f4a', '#ffeab4', '#ff8f6b'];
-  function buildLights() {
-    const box = $('#lights');
-    box.innerHTML = '';
-    const SC = 3, w = Math.ceil(window.innerWidth / SC), h = 28;
-    const [c, x] = S.make(w, h);
-    c.style.width = w * SC + 'px';
-    c.style.height = h * SC + 'px';
-    const swags = Math.max(2, Math.round(window.innerWidth / 360));
-    const y = f => Math.round(3 + 13 * 4 * f * (1 - f));
-    for (let px = 0; px < w; px++) {
-      const f = ((px / w) * swags) % 1;
-      S.dot(x, 0, px, y(f), '#120a05');
-      S.dot(x, 0, px, y(f) + 1, '#2a1a0e');
-    }
-    const perSwag = Math.max(3, Math.round(window.innerWidth / swags / 84));
-    let n = 0;
-    const glows = [];
-    for (let s = 0; s < swags; s++) {
-      for (let k = 1; k <= perSwag; k++, n++) {
-        const f = k / (perSwag + 1), px = Math.round(((s + f) / swags) * w), py = y(f) + 2;
-        const col = BULB_COLOURS[n % BULB_COLOURS.length];
-        S.dot(x, 0, px, py, '#3a2616');
-        for (let dy = 1; dy <= 3; dy++) for (let dx = -1; dx <= 1; dx++) if (!(dy === 3 && dx !== 0)) S.dot(x, 0, px + dx, py + dy, col);
-        S.dot(x, 0, px - 1, py + 1, '#fffbe8');
-        const g = document.createElement('i');
-        g.className = 'bulb';
-        g.style.left = px * SC + 'px';
-        g.style.top = (py + 3) * SC + 'px';
-        g.style.animationDelay = (-((n * 7) % 11) * 0.31) + 's';
-        glows.push(g);
-      }
-    }
-    box.append(c, ...glows);
+  /* ───────── candles on the mantel ───────── */
+  function buildMantel() {
+    const mantel = $('#mantel');
+    if (mantel.querySelector('.cndl')) return;
+    ['tall c1', 'mid c2', 'stub c3', 'tall c4'].forEach(cls => { const c = document.createElement('i'); c.className = `cndl ${cls}`; mantel.appendChild(c); });
   }
 
   /* ───────── the shelf ───────── */
@@ -147,7 +123,7 @@
     const header = $('.top');
     const top = Math.round(header.offsetTop + header.offsetHeight + 8);
     const width = Math.min(620, vw - 20);
-    const bottom = PS.hps * 43 + 12; // leave the whole cauldron + fire visible
+    const bottom = PS.hps * 47 + 8; // leave the whole cauldron + fire visible
     const height = clamp(vh - top - bottom, 330, 720);
     return { top, left: Math.round((vw - width) / 2), width, height };
   }
@@ -158,10 +134,35 @@
     grid.style.setProperty('--r', ((g.height / 2) / g.width).toFixed(4));
   }
 
+  const shelf = $('#shelf'), shelfWrap = $('#shelfWrap'), shelfUp = $('#shelfUp'), shelfDown = $('#shelfDown');
+
+  /** The recipes live on the chimney breast: a fixed window between the header and the mantel that scrolls row by row. */
+  function layoutShelf() {
+    const header = $('.top');
+    const top = header.offsetTop + header.offsetHeight + 4;
+    const mantelTop = window.innerHeight - PS.hps * 70;
+    shelfWrap.style.setProperty('--shelf-top', top + 'px');
+    shelfWrap.style.setProperty('--shelf-h', Math.max(160, mantelTop - top - 10) + 'px');
+    updateArrows();
+  }
+  function updateArrows() {
+    const max = shelf.scrollHeight - shelf.clientHeight;
+    shelfUp.hidden = shelf.scrollTop < 8;
+    shelfDown.hidden = max <= 8 || shelf.scrollTop > max - 8;
+  }
+  const rowStep = () => { const s = $('.slot', shelf); return s ? s.offsetHeight + parseFloat(getComputedStyle($('#grid')).rowGap || 0) : 160; };
+  shelf.addEventListener('scroll', updateArrows, { passive: true });
+  shelfUp.addEventListener('click', () => shelf.scrollBy({ top: -rowStep(), behavior: 'smooth' }));
+  shelfDown.addEventListener('click', () => shelf.scrollBy({ top: rowStep(), behavior: 'smooth' }));
+
   function renderGrid() {
     grid.innerHTML = '';
     fitCards();
+    layoutShelf();
     RECIPES.forEach(r => {
+      const slot = document.createElement('div');
+      slot.className = 'slot';
+      slot.innerHTML = `<i class="hole"></i><img class="pin px" alt="" src="${IMG.pin}">`;
       const card = document.createElement('button');
       card.className = 'card paper';
       card.type = 'button';
@@ -170,14 +171,15 @@
       card.innerHTML = `${doodleImg(r.doodle)}<span class="c-text"><span class="c-title"></span></span>`;
       $('.c-title', card).textContent = r.title;
       card.addEventListener('click', () => openRecipe(r, card));
-      grid.appendChild(card);
+      slot.appendChild(card);
+      grid.appendChild(slot);
     });
     const total = Math.max(MIN_CARDS, Math.ceil(RECIPES.length / 2) * 2);
     for (let i = RECIPES.length; i < total; i++) {
-      const blank = document.createElement('div');
-      blank.className = 'card blank';
-      blank.innerHTML = `<span class="c-text"><span class="c-title">a blank page</span></span>`;
-      grid.appendChild(blank);
+      const slot = document.createElement('div');
+      slot.className = 'slot';
+      slot.innerHTML = `<div class="card blank"><span class="c-text"><span class="c-title">a blank page</span></span></div>`;
+      grid.appendChild(slot);
     }
   }
 
@@ -500,6 +502,8 @@
     busy = true;
     current = { recipe: r, card };
 
+    card.parentElement.classList.remove('pin-in');
+    card.parentElement.classList.add('open'); // the pin is pulled out
     card.classList.add('pressed');
     const cr = card.getBoundingClientRect();
     const g = geometry();
@@ -563,6 +567,10 @@
       stage.className = 'stage';
       stage.getAnimations().forEach(a => a.cancel());
       card.classList.remove('lifted', 'pressed');
+      const slot = card.parentElement;
+      slot.classList.remove('open');
+      slot.classList.add('pin-in'); // ...and pushed back in
+      setTimeout(() => slot.classList.remove('pin-in'), 600);
       document.body.classList.remove('locked');
       card.focus({ preventScroll: true });
       current = null;
@@ -609,7 +617,7 @@
     cancelAnimationFrame(resizeFrame);
     resizeFrame = requestAnimationFrame(() => {
       applyPixelScale();
-      buildLights();
+      layoutShelf();
       if (current && !busy) { Object.assign(stage.style, px(geometry())); relayoutStrikes(); }
       else if (!current) fitCards();
     });
@@ -618,6 +626,7 @@
 
   loadSprites();
   applyPixelScale();
-  buildLights();
+  buildMantel();
   renderGrid();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(layoutShelf);
 })();

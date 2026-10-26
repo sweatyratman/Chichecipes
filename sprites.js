@@ -112,8 +112,9 @@ window.Sprites = (() => {
   }
 
   const FIRE_W = 36, FIRE_H = 24;
-  function fire() {
-    const tongues = [{ cx: 6, h: 12, w: 4 }, { cx: 12, h: 18, w: 5 }, { cx: 18, h: 23, w: 6 }, { cx: 25, h: 17, w: 5 }, { cx: 31, h: 11, w: 4 }];
+  function fire(low) {
+    const base = [{ cx: 6, h: 12, w: 4 }, { cx: 12, h: 18, w: 5 }, { cx: 18, h: 23, w: 6 }, { cx: 25, h: 17, w: 5 }, { cx: 31, h: 11, w: 4 }];
+    const tongues = low ? base.map(t => ({ cx: t.cx, h: Math.round(t.h * 0.4) + 9, w: Math.max(1.6, t.w * 0.6) })) : base;
     const [c] = sheet(FIRE_W, FIRE_H, 3, (ctx, f) => {
       tongues.forEach((tg, k) => {
         const sway = Math.round(Math.sin(f * 2.1 + k * 1.3) * 1.4), h = tg.h + Math.round(Math.sin(f * 2.6 + k * 2) * 2);
@@ -132,7 +133,7 @@ window.Sprites = (() => {
           }
         }
       });
-      for (let px = 3; px < 34; px++) { dot(ctx, 0, px, FIRE_H - 1, '#ffd45a'); if (px > 5 && px < 31) dot(ctx, 0, px, FIRE_H - 2, '#ffb43e'); }
+      for (let px = 3; px < 34; px++) { dot(ctx, 0, px, FIRE_H - 1, '#ffd45a'); if (!low && px > 5 && px < 31) dot(ctx, 0, px, FIRE_H - 2, '#ffb43e'); }
     });
     return url(c);
   }
@@ -292,6 +293,187 @@ window.Sprites = (() => {
   const wallDusk = () => wall({ base: ['#3a2418', '#33201a', '#3d271b', '#37231a'], light: '#4a3022', dark: '#2a1a12', knot: '#241410', seam: '#1c0f09', edge: '#4a2f20' }, 5);
   const wallLit = () => wall({ base: ['#5a3420', '#54301f', '#603823', '#58321f'], light: '#7a4a2c', dark: '#3f2315', knot: '#33190e', seam: '#2a150b', edge: '#7a4a2c' }, 5);
 
-  return { cat, pot, fire, logs, well, quill, iceCream, pin, corner, flourish, blot, wallDusk, wallLit, rng, make, dot,
+
+  const line = (ctx, x0, y0, x1, y1, col) => {
+    const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0), sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
+    let err = dx + dy;
+    for (;;) {
+      dot(ctx, 0, x0, y0, col);
+      if (x0 === x1 && y0 === y1) break;
+      const e2 = 2 * err;
+      if (e2 >= dy) { err += dy; x0 += sx; }
+      if (e2 <= dx) { err += dx; y0 += sy; }
+    }
+  };
+
+  /* ───────── the room: bricks, wallpaper, mantel, fireplace ───────── */
+  function brickTile(pal, seed) {
+    const r = rng(seed), [c, x] = make(32, 32);
+    x.fillStyle = pal.mortar; x.fillRect(0, 0, 32, 32);
+    for (let row = 0; row < 4; row++) {
+      const off = (row % 2) * 8;
+      for (let bx = -1; bx < 3; bx++) {
+        const x0 = bx * 16 + off, y0 = row * 8, base = pal.base[Math.floor(r() * pal.base.length)];
+        for (let yy = 1; yy < 8; yy++) for (let xx = 1; xx < 16; xx++) {
+          const px = x0 + xx, py = y0 + yy;
+          if (px < 0 || px >= 32) continue;
+          let col = base;
+          if (yy === 1) col = pal.light; else if (yy === 7) col = pal.dark; else if (r() < 0.1) col = pal.chip;
+          dot(x, 0, px, py, col);
+        }
+      }
+    }
+    return url(c);
+  }
+  const bricksDusk = () => brickTile({ base: ['#5a3a34', '#64403a', '#52352f', '#603c36'], light: '#7a5047', dark: '#40261f', chip: '#46291f', mortar: '#2a1713' }, 3);
+  const bricksLit = () => brickTile({ base: ['#7b4a38', '#86503b', '#6f4333', '#82503a'], light: '#a06a4c', dark: '#52301f', chip: '#5e3626', mortar: '#35190f' }, 3);
+
+  function wallpaper(pal) {
+    const [c, x] = make(32, 32);
+    x.fillStyle = pal.base; x.fillRect(0, 0, 32, 32);
+    for (let px = 0; px < 32; px++) if (px % 16 < 2) for (let py = 0; py < 32; py++) dot(x, 0, px, py, pal.stripe);
+    [[8, 8], [24, 24]].forEach(([cx, cy]) => { [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => dot(x, 0, cx + dx, cy + dy, pal.motif)); dot(x, 0, cx, cy, pal.motifHi); });
+    [[8, 24], [24, 8]].forEach(([cx, cy]) => dot(x, 0, cx, cy, pal.motif));
+    return url(c);
+  }
+  const wallDusk2 = () => wallpaper({ base: '#2c2a46', stripe: '#262440', motif: '#3d3a5e', motifHi: '#54507c' });
+  const wallLit2 = () => wallpaper({ base: '#4a3246', stripe: '#422b3f', motif: '#634359', motifHi: '#86596a' });
+
+  function mantelTile() {
+    const [c, x] = make(16, 8), r = rng(9);
+    const cols = ['#c58a4e', '#8a5a30', '#7b4d2a', '#7b4d2a', '#6e4326', '#5a3720', '#3a2314', '#26160b'];
+    cols.forEach((col, y) => { for (let px = 0; px < 16; px++) dot(x, 0, px, y, col); });
+    for (let i = 0; i < 10; i++) dot(x, 0, Math.floor(r() * 16), 1 + Math.floor(r() * 4), '#68401f');
+    return url(c);
+  }
+
+  const FP_W = 120, FP_H = 62;
+  function surround() {
+    const [c, x] = make(FP_W, FP_H), r = rng(21);
+    const stone = ['#7a6358', '#6e574d', '#83685b', '#745e53'];
+    for (let row = 0; row < 11; row++) {
+      const off = (row % 2) * 6, y0 = row * 6;
+      for (let bx = -1; bx < 11; bx++) {
+        const x0 = bx * 12 + off, base = stone[Math.floor(r() * stone.length)];
+        for (let yy = 0; yy < 6; yy++) for (let xx = 0; xx < 12; xx++) {
+          const px = x0 + xx, py = y0 + yy;
+          if (px < 0 || px >= FP_W || py >= FP_H) continue;
+          let col = base;
+          if (xx === 0 || yy === 5) col = '#3a2a24'; else if (yy === 0) col = '#98796a'; else if (r() < 0.08) col = '#5a463e';
+          dot(x, 0, px, py, col);
+        }
+      }
+    }
+    // lintel slab with keystone
+    for (let py = 6; py < 14; py++) for (let px = 0; px < FP_W; px++) {
+      let col = py === 6 ? '#a58a7c' : py === 13 ? '#3a2a24' : '#75655c';
+      if (px % 30 === 0) col = '#3a2a24';
+      if (px >= 54 && px <= 65) col = py === 6 ? '#c1a595' : py === 13 ? '#3a2a24' : '#8f7b6e';
+      dot(x, 0, px, py, col);
+    }
+    // the opening
+    x.clearRect(30, 14, 60, 44);
+    for (let py = 14; py < 58; py++) { for (let i = 0; i < 3; i++) { dot(x, 0, 30 + i, py, i === 0 ? '#2a1c17' : '#4a3730'); dot(x, 0, 89 - i, py, i === 0 ? '#2a1c17' : '#4a3730'); } }
+    for (let px = 30; px < 90; px++) { dot(x, 0, px, 14, '#241713'); dot(x, 0, px, 15, '#3d2b24'); }
+    // hearth slab
+    for (let px = 0; px < FP_W; px++) { dot(x, 0, px, 58, '#b4a08e'); dot(x, 0, px, 59, '#8c7a6a'); dot(x, 0, px, 60, '#6c5c50'); dot(x, 0, px, 61, '#3c2e26'); }
+    return url(x.canvas);
+  }
+
+  function firebox() {
+    const [c, x] = make(60, 44), r = rng(4);
+    x.fillStyle = '#150b09'; x.fillRect(0, 0, 60, 44);
+    for (let row = 0; row < 8; row++) {
+      const off = (row % 2) * 6, y0 = row * 6;
+      for (let bx = -1; bx < 6; bx++) {
+        const x0 = bx * 12 + off, base = ['#2c1b16', '#34211a', '#26160f'][Math.floor(r() * 3)];
+        for (let yy = 1; yy < 6; yy++) for (let xx = 1; xx < 12; xx++) {
+          const px = x0 + xx, py = y0 + yy;
+          if (px < 0 || px >= 60 || py >= 44) continue;
+          dot(x, 0, px, py, yy === 1 ? '#3b261d' : base);
+        }
+      }
+    }
+    for (let py = 0; py < 10; py++) for (let px = 0; px < 60; px++) if ((px + py) % 2 === 0 && py < 8 - Math.floor(r() * 3)) dot(x, 0, px, py, '#0b0605');
+    return url(c);
+  }
+
+  /* ───────── candles (2 flame frames) ───────── */
+  function candle(bodyW, bodyH, dishW, wax) {
+    const W = dishW, H = 8 + bodyH + 4, cx = Math.floor(W / 2), bx0 = cx - Math.floor(bodyW / 2);
+    const [c, x] = sheet(W, H, 2, (ctx, f) => {
+      for (let py = 8; py < 8 + bodyH; py++) for (let i = 0; i < bodyW; i++) {
+        let col = wax[1];
+        if (i === 0) col = wax[0]; else if (i >= bodyW - 1) col = wax[2];
+        if (py === 8) col = wax[0];
+        dot(ctx, 0, bx0 + i, py, col);
+      }
+      [[bx0 + bodyW - 1, 8 + 3], [bx0 + bodyW - 1, 8 + 4], [bx0, 8 + 6]].forEach(([px, py]) => dot(ctx, 0, px + (px === bx0 ? 0 : 0), py, wax[0]));
+      dot(ctx, 0, cx, 7, '#2a1a12');
+      const fl = f ? [[cx, 3, '#ffd45a'], [cx, 4, '#ffd45a'], [cx, 5, '#fff3b8'], [cx, 6, '#fff3b8'], [cx - 1, 5, '#ff9d2e'], [cx + 1, 5, '#ff9d2e'], [cx + 1, 4, '#ff9d2e'], [cx, 2, '#ff9d2e']]
+                    : [[cx, 2, '#ffd45a'], [cx, 3, '#ffd45a'], [cx, 4, '#fff3b8'], [cx, 5, '#fff3b8'], [cx, 6, '#fff3b8'], [cx - 1, 5, '#ff9d2e'], [cx - 1, 4, '#ff9d2e'], [cx + 1, 5, '#ff9d2e'], [cx, 1, '#ff9d2e']];
+      fl.forEach(([px, py, col]) => dot(ctx, 0, px, py, col));
+      const by = 8 + bodyH;
+      for (let px = 0; px < W; px++) { dot(ctx, 0, px, by, px < 2 || px >= W - 2 ? '#8a5a1c' : '#e8b857'); dot(ctx, 0, px, by + 1, '#c8903a'); }
+      for (let px = 1; px < W - 1; px++) dot(ctx, 0, px, by + 2, '#a8702a');
+      for (let px = 2; px < W - 2; px++) dot(ctx, 0, px, by + 3, '#6c4416');
+    });
+    outline(c, x, '#1a0f08');
+    return url(c);
+  }
+
+  /* ───────── the spider and his web ───────── */
+  const WEB = 44;
+  function web() {
+    const [c, x] = make(WEB, WEB);
+    const hub = [WEB - 1, 0], col = '#cdc6dd', dim = '#9f98b4';
+    const angles = [93, 112, 131, 150, 169].map(a => (a * Math.PI) / 180);
+    const pt = (a, rad) => [Math.round(hub[0] + Math.cos(a) * rad), Math.round(hub[1] + Math.sin(a) * rad)];
+    angles.forEach(a => { const [ex, ey] = pt(a, 42); line(x, hub[0], hub[1], Math.min(WEB - 1, Math.max(0, ex)), Math.min(WEB - 1, ey), col); });
+    [9, 17, 26, 35].forEach(rad => {
+      for (let i = 0; i < angles.length - 1; i++) {
+        const [x0, y0] = pt(angles[i], rad), [x1, y1] = pt(angles[i + 1], rad);
+        const mx = Math.round((x0 + x1) / 2 + 1), my = Math.round((y0 + y1) / 2 - 1);
+        line(x, x0, y0, mx, my, dim); line(x, mx, my, x1, y1, dim);
+      }
+    });
+    return url(c);
+  }
+
+  const SPIDER_W = 26, SPIDER_H = 32;
+  function spider() {
+    const body = '#43325a', hi = '#62497f', leg = '#2a1f38', out = '#120b1a';
+    const [c, x] = sheet(SPIDER_W, SPIDER_H, 2, (ctx, f) => {
+      const legs = [[[8, 21], [4, 17], [2, 21]], [[8, 23], [3, 22], [1, 27]], [[9, 26], [5, 28], [4, 31]]];
+      legs.forEach(pl => { for (let i = 0; i < pl.length - 1; i++) line(ctx, pl[i][0], pl[i][1], pl[i + 1][0], pl[i + 1][1], leg); });
+      legs.forEach(pl => { for (let i = 0; i < pl.length - 1; i++) line(ctx, 26 - pl[i][0], pl[i][1], 26 - pl[i + 1][0], pl[i + 1][1], leg); });
+      // the front-left leg raised to hold a candle
+      line(ctx, 8, 20, 5, 16, leg); line(ctx, 5, 16, 3, 16, leg);
+      line(ctx, 17, 20, 21, 17, leg); line(ctx, 21, 17, 23, 21, leg);
+      disc(ctx, 13, 23, 6.2, l => (l > 0.5 ? hi : l > -0.4 ? body : '#33254a'));
+      // eyes, blush, smile
+      [[10, 22], [10, 23], [11, 22], [11, 23], [15, 22], [15, 23], [16, 22], [16, 23]].forEach(([px, py]) => dot(ctx, 0, px, py, '#fffaf0'));
+      [[11, 23], [15, 23]].forEach(([px, py]) => dot(ctx, 0, px, py, '#1a1022'));
+      [[9, 25], [17, 25]].forEach(([px, py]) => dot(ctx, 0, px, py, '#e8809a'));
+      [[12, 26], [13, 27], [14, 26]].forEach(([px, py]) => dot(ctx, 0, px, py, '#1a1022'));
+      // nightcap: band, drooping cone, pompom
+      for (let px = 8; px <= 18; px++) { dot(ctx, 0, px, 18, '#f4efe6'); dot(ctx, 0, px, 17, '#e2dccf'); }
+      const cone = [[9, 16, 8], [10, 15, 7], [11, 14, 7], [12, 13, 6], [13, 12, 6], [14, 11, 5], [15, 10, 5], [16, 10, 4]];
+      cone.forEach(([px, py, w], i) => { for (let k = 0; k < Math.max(2, 9 - i); k++) dot(ctx, 0, px + (i > 3 ? 0 : 0), py - k + 1 + (i > 5 ? 0 : 0), (k + i) % 4 < 2 ? '#5873c8' : '#8fa6ea'); });
+      [[13, 7], [14, 6], [15, 6], [16, 7], [17, 8], [18, 9], [18, 10], [19, 11]].forEach(([px, py], i) => { dot(ctx, 0, px, py, '#5873c8'); dot(ctx, 0, px, py + 1, i % 2 ? '#5873c8' : '#8fa6ea'); });
+      disc(ctx, 20, 13, 2.2, () => '#fffaf0');
+      // thread
+      for (let py = 0; py < 6; py++) dot(ctx, 0, 14, py, '#cdc6dd');
+      // the candle
+      for (let py = 10; py < 16; py++) { dot(ctx, 0, 1, py, '#f3e6c8'); dot(ctx, 0, 2, py, '#e0cfa6'); }
+      dot(ctx, 0, 1, 16, '#c8903a'); dot(ctx, 0, 2, 16, '#a8702a'); dot(ctx, 0, 0, 16, '#e8b857');
+      const fl = f ? [[2, 6, '#ffb43e'], [1, 7, '#ffd45a'], [1, 8, '#fff3b8'], [2, 8, '#ffb43e'], [1, 9, '#fff3b8']] : [[1, 5, '#ffb43e'], [1, 6, '#ffd45a'], [1, 7, '#fff3b8'], [2, 7, '#ffb43e'], [1, 8, '#fff3b8'], [1, 9, '#fff3b8']];
+      fl.forEach(([px, py, col]) => dot(ctx, 0, px, py, col));
+    });
+    outline(c, x, out);
+    return url(c);
+  }
+
+  return { bricksDusk, bricksLit, wallDusk2, wallLit2, mantelTile, surround, firebox, candle, web, spider, cat, pot, fire, logs, well, quill, iceCream, pin, corner, flourish, blot, wallDusk, wallLit, rng, make, dot,
     size: { cat: [CAT_W, CAT_H], pot: [POT_W, POT_H], fire: [FIRE_W, FIRE_H], logs: [LOGS_W, LOGS_H], well: [WELL_W, WELL_H], quill: [QUILL_W, QUILL_H] } };
 })();
