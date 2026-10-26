@@ -95,6 +95,7 @@
   const grid = $('#grid');
   const stage = $('#stage');
   const veil = $('#veil');
+  const backBtn = $('#back');
   let current = null; // { recipe, card }
   let busy = false;
 
@@ -106,8 +107,8 @@
     const header = $('.top');
     const top = Math.round(header.offsetTop + header.offsetHeight + 8);
     const width = Math.min(780, vw - 20);
-    const bottom = Math.max(64, Math.min(130, vh * 0.15));
-    const height = clamp(vh - top - bottom, 340, 680);
+    const bottom = Math.max(60, Math.min(110, vh * 0.12));
+    const height = clamp(vh - top - bottom, 340, 720);
     return { top, left: Math.round((vw - width) / 2), width, height };
   }
   const px = g => ({ top: g.top + 'px', left: g.left + 'px', width: g.width + 'px', height: g.height + 'px' });
@@ -190,24 +191,12 @@
   const PAPER_DETAILS = '<div class="coffee"></div>';
 
   function buildInner(r) {
-    const scale = saved.scale[r.id] || 1;
     const inner = document.createElement('div');
     inner.className = 'inner';
     inner.innerHTML = `
       ${PAPER_DETAILS}
-      <button class="back" type="button">‹ back to the shelf</button>
       <h2></h2>
       <p class="blurb"></p>
-      <div class="scale-wrap"><div class="scale">
-        <div class="scale-head">
-          <label for="scale-range">scale it up</label>
-          <span class="scale-val">×<input id="scale-num" type="number" inputmode="decimal" min="0.01" step="any" aria-label="Scale multiplier"></span>
-        </div>
-        <div class="scale-row">
-          <input id="scale-range" type="range" min="0.25" max="10" step="0.25" aria-label="Scale slider">
-          <button type="button" class="reset-scale">back to ×1</button>
-        </div>
-      </div></div>
       <h3>Ingredients</h3>
       <ul class="ings"></ul>
       <div class="foot"><span>tap an ingredient to cross it off</span><button type="button" class="rub">rub out the ink</button></div>`;
@@ -239,19 +228,6 @@
       list.appendChild(li);
     });
 
-    const range = $('#scale-range', inner), num = $('#scale-num', inner);
-    const apply = (value, from) => {
-      saved.scale[r.id] = value;
-      if (from !== 'range') range.value = clamp(value, 0.25, 10);
-      if (from !== 'num') num.value = prettyScale(value);
-      updateQuantities(r, value);
-      persist();
-    };
-    range.addEventListener('input', () => apply(parseFloat(range.value), 'range'));
-    num.addEventListener('input', () => { const v = parseFloat(num.value); if (v > 0 && isFinite(v)) apply(Math.min(v, 10000), 'num'); });
-    num.addEventListener('blur', () => { num.value = prettyScale(saved.scale[r.id] || 1); });
-    $('.reset-scale', inner).addEventListener('click', () => apply(1));
-    $('.back', inner).addEventListener('click', closeRecipe);
     $('.rub', inner).addEventListener('click', () => {
       saved.ticks[r.id] = {};
       persist();
@@ -259,8 +235,6 @@
       $$('.ing.crossed', inner).forEach(b => { b.classList.remove('crossed'); b.setAttribute('aria-pressed', 'false'); });
     });
 
-    range.value = clamp(scale, 0.25, 10);
-    num.value = prettyScale(scale);
     return inner;
   }
 
@@ -472,6 +446,49 @@
     return flap;
   }
 
+  const PRESETS = [1, 2, 3, 4, 5];
+
+  function buildScalebar(r) {
+    const bar = document.createElement('div');
+    bar.className = 'scalebar';
+    bar.setAttribute('role', 'group');
+    bar.setAttribute('aria-label', 'Scale the recipe');
+    PRESETS.forEach(n => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'tab';
+      b.dataset.x = n;
+      b.textContent = `${n}×`;
+      b.setAttribute('aria-label', `Make ${n} times`);
+      b.addEventListener('click', () => setScale(r, n));
+      bar.appendChild(b);
+    });
+    const custom = document.createElement('label');
+    custom.className = 'tab custom';
+    custom.innerHTML = '<input type="number" inputmode="decimal" min="0.01" step="any" placeholder="…" aria-label="Custom multiplier">×';
+    const input = $('input', custom);
+    input.addEventListener('input', () => { const v = parseFloat(input.value); if (v > 0 && isFinite(v)) setScale(r, Math.min(v, 10000), true); });
+    input.addEventListener('blur', () => syncScalebar(r));
+    bar.appendChild(custom);
+    return bar;
+  }
+
+  function syncScalebar(r, typing) {
+    const x = saved.scale[r.id] || 1;
+    $$('.tab[data-x]', stage).forEach(b => b.classList.toggle('on', Number(b.dataset.x) === x));
+    const custom = $('.tab.custom', stage), input = $('.tab.custom input', stage);
+    const isPreset = PRESETS.includes(x);
+    custom.classList.toggle('on', !isPreset);
+    if (!typing) input.value = isPreset ? '' : prettyScale(x);
+  }
+
+  function setScale(r, value, typing) {
+    saved.scale[r.id] = value;
+    persist();
+    updateQuantities(r, value);
+    syncScalebar(r, typing);
+  }
+
   function buildStage(r) {
     stage.setAttribute('aria-label', r.title);
     stage.innerHTML = '<div class="page paper"></div>';
@@ -479,6 +496,7 @@
     const tools = document.createElement('div');
     tools.className = 'tools';
     tools.innerHTML = `<div class="well">${WELL_BACK}<div class="quill">${quillSVG()}</div>${WELL_FRONT}</div>`;
+    tools.append(buildScalebar(r));
     stage.append(tools);
     $('.quill', stage).style.transform = 'translate(48px, 40px) rotate(-14deg)';
   }
@@ -499,12 +517,14 @@
     document.body.classList.add('cooking', 'locked');
     buildStage(r);
     updateQuantities(r, saved.scale[r.id] || 1);
+    syncScalebar(r);
+    backBtn.classList.add('on');
     card.classList.add('lifted');
 
     if (reduced()) {
       $('.tools', stage).classList.add('on');
       busy = false;
-      $('.back', stage).focus({ preventScroll: true });
+      backBtn.focus({ preventScroll: true });
       return;
     }
 
@@ -530,8 +550,7 @@
       $('.tools', stage).classList.add('on');
       relayoutStrikes();
       busy = false;
-      const b = $('.back', stage);
-      if (b) b.focus({ preventScroll: true });
+      backBtn.focus({ preventScroll: true });
     }).catch(() => { busy = false; });
   }
 
@@ -540,6 +559,7 @@
     busy = true;
     const { card } = current;
     cancelJobs();
+    backBtn.classList.remove('on');
     document.body.classList.remove('cooking');
 
     const finish = () => {
@@ -582,7 +602,12 @@
     Promise.all([swing.finished, move.finished]).then(finish).catch(finish);
   }
 
+  backBtn.addEventListener('click', closeRecipe);
   veil.addEventListener('click', closeRecipe);
+  // anywhere that isn't the page itself folds it back up
+  document.addEventListener('pointerdown', e => {
+    if (current && !busy && !stage.contains(e.target) && !backBtn.contains(e.target)) closeRecipe();
+  });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeRecipe(); });
 
   let resizeFrame = 0;
