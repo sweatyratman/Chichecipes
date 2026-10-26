@@ -9,111 +9,24 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%90%B1%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600;1,9..144,700&family=Kalam:wght@300;400;700&family=Homemade+Apple&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Pixelify+Sans:wght@400;600;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <!-- shared gradients for the fire -->
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
-    <defs>
-      <linearGradient id="flameOuter" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#d8431a"/>
-        <stop offset=".45" stop-color="#ff8b25"/>
-        <stop offset="1" stop-color="#ffcf55"/>
-      </linearGradient>
-      <linearGradient id="flameInner" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#ffc13d"/>
-        <stop offset="1" stop-color="#fff6c8"/>
-      </linearGradient>
-    </defs>
-  </svg>
-
   <!-- the nook: lit by fairy lights; the cauldron's fire is kindled while a recipe is open -->
   <div class="scene" aria-hidden="true">
-    <div class="wall"></div>
+    <div class="wall wall-cool"></div>
     <div class="wall wall-lit"></div>
     <div class="lamp"></div>
     <div class="lights" id="lights"></div>
 
     <div class="hearth">
-      <svg class="hearth-back" viewBox="0 0 400 320" preserveAspectRatio="xMidYMax meet">
-        <defs>
-          <radialGradient id="potBody" cx=".34" cy=".3" r=".9">
-            <stop offset="0" stop-color="#4b4852"/>
-            <stop offset=".45" stop-color="#2a282f"/>
-            <stop offset="1" stop-color="#121014"/>
-          </radialGradient>
-          <linearGradient id="rimGrad" x1="0" x2="1">
-            <stop offset="0" stop-color="#55525c"/>
-            <stop offset=".5" stop-color="#2c2a31"/>
-            <stop offset="1" stop-color="#1a181d"/>
-          </linearGradient>
-          <radialGradient id="stew" cx=".5" cy=".3" r=".8">
-            <stop offset="0" stop-color="#d27a35"/>
-            <stop offset="1" stop-color="#6a331b"/>
-          </radialGradient>
-          <linearGradient id="log" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#6b4528"/>
-            <stop offset="1" stop-color="#33200f"/>
-          </linearGradient>
-        </defs>
-        <ellipse cx="200" cy="302" rx="170" ry="12" fill="#000" opacity=".35"/>
-        <!-- handles -->
-        <g fill="none" stroke="#1a181d" stroke-width="10" stroke-linecap="round">
-          <path d="M72,92 C44,88 38,128 74,134"/>
-          <path d="M328,92 C356,88 362,128 326,134"/>
-        </g>
-        <!-- feet -->
-        <g fill="#18161b">
-          <path d="M106,206 L126,206 L120,262 L100,262Z"/>
-          <path d="M274,206 L294,206 L300,262 L280,262Z"/>
-          <path d="M188,226 L212,226 L212,266 L188,266Z"/>
-        </g>
-        <!-- body -->
-        <path d="M60,84 C46,176 104,232 200,232 C296,232 354,176 340,84Z" fill="url(#potBody)"/>
-        <path d="M82,118 C82,170 112,204 150,218" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width="6" stroke-linecap="round"/>
-        <path d="M96,132 C97,160 108,178 124,190" fill="none" stroke="#fff" stroke-opacity=".1" stroke-width="3" stroke-linecap="round"/>
-        <!-- rivets -->
-        <g fill="#0f0e12" stroke="#4b4852" stroke-width="1">
-          <circle cx="92" cy="106" r="3"/><circle cx="130" cy="108" r="3"/><circle cx="270" cy="108" r="3"/><circle cx="308" cy="106" r="3"/>
-        </g>
-        <!-- rim -->
-        <ellipse cx="200" cy="84" rx="142" ry="20" fill="url(#rimGrad)"/>
-        <ellipse cx="200" cy="85" rx="126" ry="13" fill="url(#stew)"/>
-        <ellipse cx="190" cy="82" rx="60" ry="5" fill="#ffc07a" opacity=".35"/>
-        <path d="M62,86 C80,106 320,106 338,86" fill="none" stroke="#fff" stroke-opacity=".12" stroke-width="3"/>
-        <!-- back log -->
-        <rect x="96" y="272" width="208" height="26" rx="13" fill="url(#log)" transform="rotate(-4 200 285)"/>
-      </svg>
-
-      <div class="steam s1"></div><div class="steam s2"></div><div class="steam s3"></div>
+      <div class="px pot"></div>
       <div class="fire-glow"></div>
-      <div class="fire">
-        <svg class="flame fa" viewBox="0 0 60 100"><use href="#fo"/></svg>
-        <svg class="flame fb" viewBox="0 0 60 100"><use href="#fo"/></svg>
-        <svg class="flame fc" viewBox="0 0 60 100"><use href="#fo"/></svg>
-        <svg class="flame fd" viewBox="0 0 60 100"><use href="#fo"/></svg>
-        <svg class="flame fe" viewBox="0 0 60 100"><use href="#fo"/></svg>
-        <svg class="flame ff" viewBox="0 0 60 100"><use href="#fi"/></svg>
-        <svg class="flame fg" viewBox="0 0 60 100"><use href="#fi"/></svg>
-        <svg class="flame fh" viewBox="0 0 60 100"><use href="#fi"/></svg>
-      </div>
-      <svg width="0" height="0" style="position:absolute"><defs>
-        <g id="fo"><path d="M30,100 C10,100 4,78 14,58 C18,50 25,44 22,30 C22,18 28,8 30,0 C34,14 46,26 50,48 C56,66 52,100 30,100Z" fill="url(#flameOuter)"/></g>
-        <g id="fi"><path d="M30,100 C18,100 14,86 21,72 C26,64 28,58 30,46 C35,60 44,70 43,85 C42,95 36,100 30,100Z" fill="url(#flameInner)"/></g>
-      </defs></svg>
-      <i class="spark k1"></i><i class="spark k2"></i><i class="spark k3"></i><i class="spark k4"></i><i class="spark k5"></i><i class="spark k6"></i>
-
-      <svg class="hearth-front" viewBox="0 0 400 320" preserveAspectRatio="xMidYMax meet">
-        <g class="embers" fill="#ff8a2a">
-          <circle cx="150" cy="296" r="3"/><circle cx="204" cy="300" r="3.5"/><circle cx="246" cy="296" r="3"/><circle cx="276" cy="302" r="2.4"/>
-        </g>
-        <rect x="104" y="278" width="196" height="28" rx="14" fill="url(#log)" transform="rotate(5 200 292)"/>
-        <ellipse cx="108" cy="293" rx="7" ry="12" fill="#a77a48" transform="rotate(5 200 292)"/>
-        <ellipse cx="108" cy="293" rx="3" ry="6" fill="#7b5430" transform="rotate(5 200 292)"/>
-        <ellipse cx="294" cy="281" rx="7" ry="12" fill="#a77a48" transform="rotate(-4 200 285)"/>
-      </svg>
+      <div class="fire"><div class="px flames"></div></div>
+      <div class="px logs"></div>
+      <i class="spark k1"></i><i class="spark k2"></i><i class="spark k3"></i><i class="spark k4"></i><i class="spark k5"></i>
     </div>
 
     <div class="glow-wrap"><div class="glow"></div></div>
@@ -121,47 +34,8 @@
   </div>
 
   <header class="top">
-    <h1 class="logo"><span>Chichecipes</span></h1>
-
-    <!-- happy black & white mascot -->
-    <svg class="cat" viewBox="0 0 140 132" role="img" aria-label="A happy black and white cat">
-      <defs>
-        <clipPath id="headClip"><ellipse cx="70" cy="52" rx="35" ry="29"/></clipPath>
-        <clipPath id="bodyClip"><path d="M36,114 C30,86 44,68 70,68 C96,68 110,86 104,114 C96,122 44,122 36,114Z"/></clipPath>
-        <linearGradient id="fur" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffefb"/><stop offset="1" stop-color="#efe4d2"/></linearGradient>
-      </defs>
-      <ellipse cx="70" cy="125" rx="42" ry="5" fill="#000" opacity=".28"/>
-      <g class="tail">
-        <path d="M98,112 C132,112 138,78 124,58" fill="none" stroke="#2b2622" stroke-width="12" stroke-linecap="round"/>
-        <path d="M128,68 C125,64 123,61 122,58" fill="none" stroke="#fffdf8" stroke-width="12" stroke-linecap="round"/>
-      </g>
-      <path d="M36,114 C30,86 44,68 70,68 C96,68 110,86 104,114 C96,122 44,122 36,114Z" fill="url(#fur)" stroke="#2b2622" stroke-width="3"/>
-      <g clip-path="url(#bodyClip)"><path d="M30,120 C28,96 34,78 56,70 C52,88 52,104 60,122Z" fill="#2b2622"/></g>
-      <path d="M64,98 Q70,104 76,98 M60,106 Q70,113 80,106" fill="none" stroke="#e2d4be" stroke-width="2" stroke-linecap="round"/>
-      <ellipse cx="55" cy="116" rx="11" ry="7" fill="url(#fur)" stroke="#2b2622" stroke-width="3"/>
-      <ellipse cx="85" cy="116" rx="11" ry="7" fill="url(#fur)" stroke="#2b2622" stroke-width="3"/>
-      <path d="M52,118 v-3 M58,118 v-3 M82,118 v-3 M88,118 v-3" stroke="#cdbfa8" stroke-width="1.6" stroke-linecap="round"/>
-      <g class="head">
-        <path d="M38,44 L33,12 Q50,13 64,27Z" fill="#2b2622" stroke="#2b2622" stroke-width="3" stroke-linejoin="round"/>
-        <path d="M102,44 L107,12 Q90,13 76,27Z" fill="url(#fur)" stroke="#2b2622" stroke-width="3" stroke-linejoin="round"/>
-        <path d="M99,38 L102,21 L87,29Z" fill="#f2b1b4"/>
-        <ellipse cx="70" cy="52" rx="35" ry="29" fill="url(#fur)"/>
-        <g clip-path="url(#headClip)"><ellipse cx="49" cy="30" rx="23" ry="17" fill="#2b2622"/><path d="M70,20 L70,34" stroke="#2b2622" stroke-width="4" stroke-linecap="round"/></g>
-        <ellipse cx="70" cy="52" rx="35" ry="29" fill="none" stroke="#2b2622" stroke-width="3"/>
-        <path class="eye" d="M47,58 Q54,47 61,58" fill="none" stroke="#2b2622" stroke-width="3.2" stroke-linecap="round"/>
-        <path class="eye" d="M79,58 Q86,47 93,58" fill="none" stroke="#2b2622" stroke-width="3.2" stroke-linecap="round"/>
-        <ellipse cx="44" cy="66" rx="7" ry="4.2" fill="#f4a3a8" opacity=".55"/>
-        <ellipse cx="96" cy="66" rx="7" ry="4.2" fill="#f4a3a8" opacity=".55"/>
-        <path d="M66,63 L74,63 L70,68Z" fill="#e8808f" stroke="#2b2622" stroke-width="1.6" stroke-linejoin="round"/>
-        <path d="M70,68 L70,71 M70,71 Q64,78 58,71 M70,71 Q76,78 82,71" fill="none" stroke="#2b2622" stroke-width="2.4" stroke-linecap="round"/>
-        <g stroke="#2b2622" stroke-opacity=".7" stroke-width="1.5" stroke-linecap="round">
-          <path d="M34,64 L16,59 M34,69 L16,70 M106,64 L124,59 M106,69 L124,70"/>
-        </g>
-        <path d="M50,78 Q70,90 90,78" fill="none" stroke="#c8463b" stroke-width="6" stroke-linecap="round"/>
-        <circle cx="70" cy="88" r="5.5" fill="#f0b84a" stroke="#8a5f1a" stroke-width="1.6"/>
-        <path d="M65,88 H75 M70,88 V92" stroke="#8a5f1a" stroke-width="1.2" stroke-linecap="round"/>
-      </g>
-    </svg>
+    <h1 class="logo">Chichecipes</h1>
+    <div class="px cat" role="img" aria-label="A happy black and white cat"></div>
   </header>
 
   <main>
@@ -169,10 +43,11 @@
     <section id="grid" class="grid" aria-label="Recipes"></section>
   </main>
 
-  <button class="backbtn" id="back" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 L8 12 L15 19"/></svg>All recipes</button>
+  <button class="backbtn" id="back" type="button"><svg viewBox="0 0 8 10" shape-rendering="crispEdges" aria-hidden="true"><path d="M5 0h2v2H5zM3 2h2v2H3zM1 4h2v2H1zM3 6h2v2H3zM5 8h2v2H5z"/></svg>All recipes</button>
   <div class="veil" id="veil" hidden></div>
   <div class="stage" id="stage" role="dialog" aria-modal="true" hidden></div>
 
+  <script src="sprites.js"></script>
   <script src="recipes.js"></script>
   <script src="app.js"></script>
 </body>

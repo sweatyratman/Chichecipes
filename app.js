@@ -64,31 +64,67 @@
 
   const prettyScale = n => String(Math.round(n * 100) / 100);
 
-  /* ───────── fairy lights ───────── */
+  /* ───────── pixel art ───────── */
+  const PS = { cps: 3, hps: 4, wps: 3, dps: 3 };
+  const rootStyle = document.documentElement.style;
+  const S = window.Sprites;
+  const IMG = {};
+
+  function loadSprites() {
+    IMG.cat = S.cat(); IMG.pot = S.pot(); IMG.fire = S.fire(); IMG.logs = S.logs();
+    IMG.well = S.well(); IMG.quill = S.quill(); IMG.pin = S.pin(); IMG.flourish = S.flourish(); IMG.blot = S.blot();
+    IMG.corner = S.corner();
+    IMG.doodles = { iceCream: { src: S.iceCream(), w: 26 } };
+    const set = (k, v) => rootStyle.setProperty(k, `url(${v})`);
+    set('--img-cat', IMG.cat); set('--img-pot', IMG.pot); set('--img-fire', IMG.fire); set('--img-logs', IMG.logs); set('--img-pin', IMG.pin);
+    set('--img-wall-dusk', S.wallDusk()); set('--img-wall-lit', S.wallLit());
+    Object.entries(IMG.corner).forEach(([k, v]) => set(`--img-c-${k}`, v));
+  }
+
+  function applyPixelScale() {
+    const vw = window.innerWidth;
+    PS.hps = vw >= 900 ? 4 : 3;
+    PS.cps = vw >= 520 ? 3 : 2;
+    PS.wps = vw >= 520 ? 3 : 2;
+    PS.dps = vw >= 520 ? 3 : 2;
+    Object.entries(PS).forEach(([k, v]) => rootStyle.setProperty(`--${k}`, v));
+  }
+
+  /* ───────── fairy lights (pixel wire + bulbs) ───────── */
+  const BULB_COLOURS = ['#ffd36b', '#ff9f4a', '#ffeab4', '#ff8f6b'];
   function buildLights() {
     const box = $('#lights');
-    const vw = window.innerWidth;
-    const swags = Math.max(2, Math.round(vw / 360));
-    const perSwag = Math.max(3, Math.round(vw / swags / 80));
-    const y = f => 12 + 30 * 4 * f * (1 - f);
-    let d = '';
-    for (let i = 0; i <= swags * 24; i++) {
-      const x = i / (swags * 24), f = (x * swags) % 1 || (i === 0 ? 0 : 1);
-      d += `${i ? 'L' : 'M'}${(x * 1000).toFixed(1)},${y(f).toFixed(1)} `;
+    box.innerHTML = '';
+    const SC = 3, w = Math.ceil(window.innerWidth / SC), h = 28;
+    const [c, x] = S.make(w, h);
+    c.style.width = w * SC + 'px';
+    c.style.height = h * SC + 'px';
+    const swags = Math.max(2, Math.round(window.innerWidth / 360));
+    const y = f => Math.round(3 + 13 * 4 * f * (1 - f));
+    for (let px = 0; px < w; px++) {
+      const f = ((px / w) * swags) % 1;
+      S.dot(x, 0, px, y(f), '#120a05');
+      S.dot(x, 0, px, y(f) + 1, '#2a1a0e');
     }
-    box.innerHTML = `<svg viewBox="0 0 1000 74" preserveAspectRatio="none"><path vector-effect="non-scaling-stroke" d="${d}"/></svg>`;
-    $('path', box).setAttribute('vector-effect', 'non-scaling-stroke');
+    const perSwag = Math.max(3, Math.round(window.innerWidth / swags / 84));
+    let n = 0;
+    const glows = [];
     for (let s = 0; s < swags; s++) {
-      for (let k = 1; k <= perSwag; k++) {
-        const f = k / (perSwag + 1), x = (s + f) / swags;
-        const b = document.createElement('i');
-        b.className = 'bulb';
-        b.style.left = (x * 100) + '%';
-        b.style.top = (y(f) - 2) + 'px';
-        b.style.animationDelay = (-((s * 7 + k * 3) % 11) * 0.31) + 's';
-        box.appendChild(b);
+      for (let k = 1; k <= perSwag; k++, n++) {
+        const f = k / (perSwag + 1), px = Math.round(((s + f) / swags) * w), py = y(f) + 2;
+        const col = BULB_COLOURS[n % BULB_COLOURS.length];
+        S.dot(x, 0, px, py, '#3a2616');
+        for (let dy = 1; dy <= 3; dy++) for (let dx = -1; dx <= 1; dx++) if (!(dy === 3 && dx !== 0)) S.dot(x, 0, px + dx, py + dy, col);
+        S.dot(x, 0, px - 1, py + 1, '#fffbe8');
+        const g = document.createElement('i');
+        g.className = 'bulb';
+        g.style.left = px * SC + 'px';
+        g.style.top = (py + 3) * SC + 'px';
+        g.style.animationDelay = (-((n * 7) % 11) * 0.31) + 's';
+        glows.push(g);
       }
     }
+    box.append(c, ...glows);
   }
 
   /* ───────── the shelf ───────── */
@@ -99,16 +135,19 @@
   let current = null; // { recipe, card }
   let busy = false;
 
-  const BLANK_DOODLE = `<svg viewBox="0 0 60 60" aria-hidden="true" fill="none" stroke="#e6c99d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 48 L16 36 L42 10 L50 18 L24 44 Z"/><path d="M38 14 L46 22 M12 48 L24 44"/></svg>`;
+  function doodleImg(name) {
+    const d = IMG.doodles[name] || IMG.doodles.iceCream;
+    return `<img class="doodle" alt="" src="${d.src}" style="--nw:${d.w}">`;
+  }
 
   /** Where the opened page sits. Cards take the aspect ratio of the page's folded half. */
   function geometry() {
     const vw = window.innerWidth, vh = window.innerHeight;
     const header = $('.top');
     const top = Math.round(header.offsetTop + header.offsetHeight + 8);
-    const width = Math.min(780, vw - 20);
-    const bottom = Math.max(60, Math.min(110, vh * 0.12));
-    const height = clamp(vh - top - bottom, 340, 720);
+    const width = Math.min(620, vw - 20);
+    const bottom = PS.hps * 43 + 12; // leave the whole cauldron + fire visible
+    const height = clamp(vh - top - bottom, 330, 720);
     return { top, left: Math.round((vw - width) / 2), width, height };
   }
   const px = g => ({ top: g.top + 'px', left: g.left + 'px', width: g.width + 'px', height: g.height + 'px' });
@@ -127,9 +166,8 @@
       card.type = 'button';
       card.dataset.id = r.id;
       card.setAttribute('aria-label', `Open ${r.title}`);
-      card.innerHTML = `<span class="doodle">${r.doodle || ''}</span><span class="c-text"><span class="c-title"></span><span class="c-meta"></span></span>`;
+      card.innerHTML = `${doodleImg(r.doodle)}<span class="c-text"><span class="c-title"></span></span>`;
       $('.c-title', card).textContent = r.title;
-      $('.c-meta', card).textContent = r.blurb || `${r.ingredients.length} ingredients`;
       card.addEventListener('click', () => openRecipe(r, card));
       grid.appendChild(card);
     });
@@ -137,71 +175,29 @@
     for (let i = RECIPES.length; i < total; i++) {
       const blank = document.createElement('div');
       blank.className = 'card blank';
-      blank.innerHTML = `<span class="doodle">${BLANK_DOODLE}</span><span class="c-text"><span class="c-title">a blank page</span></span>`;
+      blank.innerHTML = `<span class="c-text"><span class="c-title">a blank page</span></span>`;
       grid.appendChild(blank);
     }
   }
 
-  /* ───────── the quill + inkwell ───────── */
-  function quillSVG() {
-    const tipY = 12, endY = 152, half = y => {
-      const t = (y - tipY) / (endY - tipY);
-      return 18 * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.8)), 0.85);
-    };
-    const side = dir => {
-      let pts = '';
-      for (let y = tipY; y <= endY; y += 4) pts += `${(22 + dir * half(y) * (dir < 0 ? 0.88 : 1)).toFixed(1)},${y} `;
-      return pts;
-    };
-    let barbs = '';
-    for (let y = 20; y < endY - 6; y += 4.2) {
-      const h = half(y - 8) * 0.96;
-      barbs += `<path d="M22,${y} L${(22 - h * 0.88).toFixed(1)},${(y - 8).toFixed(1)} M22,${y} L${(22 + h).toFixed(1)},${(y - 8).toFixed(1)}"/>`;
-    }
-    return `<svg viewBox="0 0 44 190" aria-hidden="true">
-      <defs>
-        <linearGradient id="vane" x1="0" x2="1"><stop offset="0" stop-color="#f4e9d0"/><stop offset=".5" stop-color="#fffaf0"/><stop offset="1" stop-color="#ecdcb9"/></linearGradient>
-      </defs>
-      <polygon points="${side(-1)} ${side(1).split(' ').reverse().join(' ')}" fill="url(#vane)" stroke="#b79b69" stroke-width=".8" stroke-linejoin="round"/>
-      <g stroke="#a98b57" stroke-opacity=".38" stroke-width=".55" fill="none">${barbs}</g>
-      <path d="M22,10 L22,170" stroke="#d6bd8a" stroke-width="2.4" stroke-linecap="round"/>
-      <path d="M22,150 L22,176" stroke="#cfae6e" stroke-width="3" stroke-linecap="round"/>
-      <path d="M20.4,170 L23.6,170 L22.9,190 L21.1,190Z" fill="#d9bb7c" stroke="#a98450" stroke-width=".5"/>
-      <path d="M21.2,181 L22.8,181 L22.9,190 L21.1,190Z" fill="#1f2b63"/>
-    </svg>`;
-  }
-
-  const WELL_BACK = `<svg viewBox="0 0 96 88" aria-hidden="true">
-      <ellipse cx="48" cy="30" rx="23" ry="7" fill="#0a0f2c"/>
-      <path d="M25,30 Q48,22 71,30" fill="none" stroke="#b98a35" stroke-width="2.4"/>
-    </svg>`;
-  const WELL_FRONT = `<svg viewBox="0 0 96 88" aria-hidden="true">
-      <defs>
-        <linearGradient id="glass" x1="0" x2="1"><stop offset="0" stop-color="#3a4d8c"/><stop offset=".45" stop-color="#1b2655"/><stop offset="1" stop-color="#0d1332"/></linearGradient>
-        <linearGradient id="brass" x1="0" x2="1"><stop offset="0" stop-color="#a87626"/><stop offset=".35" stop-color="#f0cf7e"/><stop offset="1" stop-color="#8a5c18"/></linearGradient>
-      </defs>
-      <ellipse cx="48" cy="82" rx="42" ry="6.5" fill="#2c1606" opacity=".32"/>
-      <path d="M26,33 C9,41 4,68 17,78 C30,86 66,86 79,78 C92,68 87,41 70,33 Q48,43 26,33Z" fill="url(#glass)" stroke="#0a0f2a" stroke-width="1.5"/>
-      <path d="M17,52 C15,62 19,70 26,75" fill="none" stroke="#fff" stroke-opacity=".32" stroke-width="3" stroke-linecap="round"/>
-      <path d="M70,46 C73,52 74,58 72,64" fill="none" stroke="#fff" stroke-opacity=".14" stroke-width="2" stroke-linecap="round"/>
-      <path d="M24,30 Q48,40 72,30 L72,35 Q48,45 24,35Z" fill="url(#brass)" stroke="#6e4a14" stroke-width="1"/>
-    </svg>`;
-
   /* ───────── the page ───────── */
-  const PAPER_DETAILS = '<div class="coffee"></div>';
 
   function buildInner(r) {
     const inner = document.createElement('div');
     inner.className = 'inner';
     inner.innerHTML = `
-      ${PAPER_DETAILS}
+      <div class="coffee"></div>
+      <img class="blot b1" alt="" src="${IMG.blot}"><img class="blot b2" alt="" src="${IMG.blot}">
       <h2></h2>
-      <p class="blurb"></p>
+      <img class="orn" alt="" src="${IMG.flourish}">
       <h3>Ingredients</h3>
       <ul class="ings"></ul>
-      <div class="foot"><span>tap an ingredient to cross it off</span><button type="button" class="rub">rub out the ink</button></div>`;
-    $('h2', inner).textContent = r.title;
-    if (r.blurb) $('.blurb', inner).textContent = r.blurb; else $('.blurb', inner).remove();
+      <div class="foot">tap an ingredient to cross it off · tap the ink pot to start afresh</div>`;
+    const h2 = $('h2', inner);
+    const cap = document.createElement('span');
+    cap.className = 'cap';
+    cap.textContent = r.title.charAt(0);
+    h2.append(cap, r.title.slice(1));
 
     if (r.method && r.method.length) {
       const ol = document.createElement('ol');
@@ -209,7 +205,7 @@
       r.method.forEach(step => { const li = document.createElement('li'); li.textContent = step; ol.appendChild(li); });
       const h = document.createElement('h3');
       h.textContent = 'Method';
-      h.style.marginTop = '24px';
+      h.style.marginTop = '14px';
       $('.foot', inner).before(h, ol);
     }
 
@@ -226,13 +222,6 @@
       btn.addEventListener('click', () => toggleTick(r, btn, i));
       li.appendChild(btn);
       list.appendChild(li);
-    });
-
-    $('.rub', inner).addEventListener('click', () => {
-      saved.ticks[r.id] = {};
-      persist();
-      cancelJobs();
-      $$('.ing.crossed', inner).forEach(b => { b.classList.remove('crossed'); b.setAttribute('aria-pressed', 'false'); });
     });
 
     return inner;
@@ -256,13 +245,13 @@
     return () => ((s = (s * 9301 + 49297) % 233280) / 233280);
   }
 
-  /** (Re)draws the two pen strokes for one text span; returns its [forward, back] paths. */
+  /** (Re)draws the single pen stroke across an ingredient's main text. */
   function layoutStrike(btn, ink, seed) {
     if (!ink._svg) {
       ink._svg = document.createElementNS(NS, 'svg');
       ink._svg.classList.add('strike');
       ink._svg.setAttribute('aria-hidden', 'true');
-      ink._svg.append(document.createElementNS(NS, 'path'), document.createElementNS(NS, 'path'));
+      ink._svg.append(document.createElementNS(NS, 'path'));
       btn.appendChild(ink._svg);
     }
     const w = ink.offsetWidth, h = ink.offsetHeight, pad = 7;
@@ -274,35 +263,28 @@
     svg.style.top = ink.offsetTop + 'px';
 
     const rand = rng(seed + 3);
-    const y = h * 0.58, wob = () => (rand() - 0.5) * 3.2;
+    const y = h * 0.6, wob = () => (rand() - 0.5) * 3;
     const segs = Math.max(3, Math.round(w / 38));
     const step = (w + pad * 2 - 4) / segs;
     let d = `M2,${(y + 2 + wob()).toFixed(1)}`;
     for (let s = 1; s <= segs; s++) {
       const x = 2 + step * s, slope = (-3 * s) / segs;
-      d += ` Q${(x - step / 2).toFixed(1)},${(y + wob() * 1.5 + slope).toFixed(1)} ${x.toFixed(1)},${(y + slope + wob()).toFixed(1)}`;
+      d += ` Q${(x - step / 2).toFixed(1)},${(y + wob() * 1.4 + slope).toFixed(1)} ${x.toFixed(1)},${(y + slope + wob()).toFixed(1)}`;
     }
-    const endY = y - 3;
-    const back = `M${w + pad - 1},${(endY + 4).toFixed(1)} Q${(w * 0.65).toFixed(1)},${(y + 5 + wob()).toFixed(1)} ${(w * 0.3 + pad).toFixed(1)},${(y + 1 + wob()).toFixed(1)}`;
-    const paths = svg.querySelectorAll('path');
-    paths[0].setAttribute('d', d);
-    paths[1].setAttribute('d', back);
-    return paths;
+    const path = svg.querySelector('path');
+    path.setAttribute('d', d);
+    return path;
   }
 
-  const strikeInks = btn => $$('.ink', btn).filter(ink => !ink.hidden);
   const hidePath = p => { const len = p.getTotalLength(); p.style.transition = 'none'; p.style.strokeDasharray = len; p.style.strokeDashoffset = len; return len; };
 
   function relayoutStrikes(root = stage) {
     $$('.ing', root).forEach(btn => {
       if (btn._job) return; // a strike is queued or being drawn; leave it alone
-      const seed = Number(btn.dataset.i) * 11;
-      $$('.ink', btn).forEach((ink, k) => {
-        if (!ink._svg && !btn.classList.contains('crossed')) return;
-        const paths = layoutStrike(btn, ink, seed + k);
-        ink._svg.style.display = ink.hidden ? 'none' : '';
-        paths.forEach(p => { p.style.transition = ''; p.style.strokeDasharray = ''; p.style.strokeDashoffset = ''; });
-      });
+      const ink = $('.ink.main', btn);
+      if (!ink._svg && !btn.classList.contains('crossed')) return;
+      const p = layoutStrike(btn, ink, Number(btn.dataset.i) * 11);
+      p.style.transition = ''; p.style.strokeDasharray = ''; p.style.strokeDashoffset = '';
     });
   }
 
@@ -328,26 +310,23 @@
     const btn = job.btn;
     const quill = $('.quill', stage), well = $('.well', stage);
     const wr = well.getBoundingClientRect();
-    const REST = { x: 48, y: 40, a: -14 }, WRITE_A = 22;
+    const REST = { x: 11 * PS.wps, y: 8 * PS.wps, a: -14 }, WRITE_A = 22;
     let pos = { ...REST };
     const place = p => { pos = p; quill.style.transform = `translate(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px) rotate(${p.a.toFixed(1)}deg)`; };
     const local = (x, y) => ({ x: x - wr.left, y: y - wr.top });
 
-    const segs = [];
-    strikeInks(btn).forEach((ink, k) => {
-      const paths = layoutStrike(btn, ink, Number(btn.dataset.i) * 11 + k);
-      (k === 0 ? [paths[0], paths[1]] : [paths[0]]).forEach(p => segs.push({ p, ink, len: hidePath(p), dur: 0 }));
-      if (k !== 0) hidePath(paths[1]);
-    });
-    segs.forEach(s => { s.dur = Math.min(800, 200 + s.len * 2.6); });
+    const ink = $('.ink.main', btn);
+    const p = layoutStrike(btn, ink, Number(btn.dataset.i) * 11);
+    const len = hidePath(p);
+    const dur = Math.min(900, 260 + len * 2.8);
     void btn.offsetWidth;
-    segs.forEach(s => { s.p.style.transition = ''; });
-    const at = (s, f) => { const pt = s.p.getPointAtLength(s.len * f), r = s.ink._svg.getBoundingClientRect(); return local(r.left + pt.x, r.top + pt.y); };
+    p.style.transition = '';
+    const at = f => { const pt = p.getPointAtLength(len * f), r = ink._svg.getBoundingClientRect(); return local(r.left + pt.x, r.top + pt.y); };
 
-    const travel = (to, dur, lift) => {
+    const travel = (to, ms, lift) => {
       const from = { ...pos };
       const mid = { x: (from.x + to.x) / 2, y: Math.min(from.y, to.y) - lift };
-      return tween(job, dur, e => {
+      return tween(job, ms, e => {
         const u = 1 - e;
         place({
           x: u * u * from.x + 2 * u * e * mid.x + e * e * to.x,
@@ -358,18 +337,16 @@
     };
 
     quill.style.willChange = 'transform';
-    let ok = await travel({ ...at(segs[0], 0), a: WRITE_A }, 650, 70);
-    for (let i = 0; ok && i < segs.length; i++) {
-      const s = segs[i];
-      if (i === 0 || s.ink !== segs[i - 1].ink) btn.classList.add('crossed');
-      ok = await tween(job, s.dur, e => {
-        s.p.style.strokeDashoffset = s.len * (1 - e);
-        place({ ...at(s, e), a: WRITE_A + Math.sin(e * 9) * 1.5 });
+    let ok = await travel({ ...at(0), a: WRITE_A }, 650, 70);
+    if (ok) {
+      btn.classList.add('crossed');
+      ok = await tween(job, dur, e => {
+        p.style.strokeDashoffset = len * (1 - e);
+        place({ ...at(e), a: WRITE_A + Math.sin(e * 9) * 1.5 });
       });
-      if (ok && i < segs.length - 1) ok = await travel({ ...at(segs[i + 1], 0), a: WRITE_A }, 160, 14);
     }
     job.cancelled = false; // always return the quill to its pot
-    await travel({ ...REST, y: REST.y }, 700, 60);
+    await travel({ ...REST }, 700, 60);
     quill.style.willChange = '';
   }
 
@@ -465,7 +442,7 @@
     });
     const custom = document.createElement('label');
     custom.className = 'tab custom';
-    custom.innerHTML = '<input type="number" inputmode="decimal" min="0.01" step="any" placeholder="…" aria-label="Custom multiplier">×';
+    custom.innerHTML = '<input type="number" inputmode="decimal" min="0.01" step="any" placeholder="n" aria-label="Custom multiplier">×';
     const input = $('input', custom);
     input.addEventListener('input', () => { const v = parseFloat(input.value); if (v > 0 && isFinite(v)) setScale(r, Math.min(v, 10000), true); });
     input.addEventListener('blur', () => syncScalebar(r));
@@ -489,16 +466,32 @@
     syncScalebar(r, typing);
   }
 
+  function resetInk() {
+    if (!current) return;
+    const r = current.recipe;
+    saved.ticks[r.id] = {};
+    persist();
+    cancelJobs();
+    $$('.ing.crossed', stage).forEach(b => { b.classList.remove('crossed'); b.setAttribute('aria-pressed', 'false'); });
+    const well = $('.well', stage);
+    well.classList.remove('bump');
+    void well.offsetWidth;
+    well.classList.add('bump');
+  }
+
   function buildStage(r) {
     stage.setAttribute('aria-label', r.title);
     stage.innerHTML = '<div class="page paper"></div>';
     stage.append(buildInner(r));
     const tools = document.createElement('div');
     tools.className = 'tools';
-    tools.innerHTML = `<div class="well">${WELL_BACK}<div class="quill">${quillSVG()}</div>${WELL_FRONT}</div>`;
+    tools.innerHTML = `<button class="well" type="button" aria-label="Ink pot: wipe away all the crossed-out ink">
+        <img class="wback" alt="" src="${IMG.well.back}"><div class="quill"><img alt="" src="${IMG.quill}"></div><img class="wfront" alt="" src="${IMG.well.front}">
+      </button>`;
     tools.append(buildScalebar(r));
+    $('.well', tools).addEventListener('click', resetInk);
     stage.append(tools);
-    $('.quill', stage).style.transform = 'translate(48px, 40px) rotate(-14deg)';
+    $('.quill', stage).style.transform = `translate(${11 * PS.wps}px, ${8 * PS.wps}px) rotate(-14deg)`;
   }
 
   function openRecipe(r, card) {
@@ -614,6 +607,7 @@
   window.addEventListener('resize', () => {
     cancelAnimationFrame(resizeFrame);
     resizeFrame = requestAnimationFrame(() => {
+      applyPixelScale();
       buildLights();
       if (current && !busy) { Object.assign(stage.style, px(geometry())); relayoutStrikes(); }
       else if (!current) fitCards();
@@ -621,6 +615,8 @@
   });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (current && !busy) relayoutStrikes(); });
 
+  loadSprites();
+  applyPixelScale();
   buildLights();
   renderGrid();
 })();
