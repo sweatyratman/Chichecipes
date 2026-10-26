@@ -41,6 +41,7 @@
     if (unit === 'ml') return qty >= 1000 ? { text: `${Math.round(qty / 10) / 100} L`, value: qty } : { text: `${decimal(qty)} ml`, value: qty };
     if (unit === 'tsp' || unit === 'tbsp' || unit === 'cup') {
       const tsp = qty * { tsp: 1, tbsp: 3, cup: 48 }[unit];
+      if (unit === 'tsp') return tsp < 1 / 16 ? { text: 'a pinch', value: 1 } : { text: `${fraction(tsp)} tsp`, value: tsp }; // teaspoons stay teaspoons
       if (tsp >= 48) return { text: `${fraction(tsp / 48)} cup${tsp / 48 > 1 ? 's' : ''}`, value: tsp / 48 };
       if (tsp >= 3) return { text: `${fraction(tsp / 3)} tbsp`, value: tsp / 3 };
       return tsp < 1 / 16 ? { text: 'a pinch', value: 1 } : { text: `${fraction(tsp)} tsp`, value: tsp };

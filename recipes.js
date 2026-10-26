@@ -22,7 +22,7 @@ window.RECIPES = [
       { qty: 2,   unit: 'tbsp', name: 'cocoa powder' },
       { qty: 10,  unit: 'g',    name: 'cashews' },
       { qty: 1,   unit: 'tsp',  name: 'vanilla extract' },
-      { qty: 250, unit: 'ml',   name: 'unsweetened soy milk' },
+      { qty: 250, unit: 'ml',   name: 'unsweetened oat milk' },
     ],
   },
 ];
