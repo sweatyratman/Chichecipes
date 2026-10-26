@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chichecipes</title>
+  <meta name="description" content="A cosy little book of handwritten recipes.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%90%B1%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Kitchen backdrop: the cauldron's fire is lit while a recipe is open -->
+  <div class="scene" aria-hidden="true">
+    <div class="wall wall-cool"></div>
+    <div class="wall wall-warm"></div>
+    <div class="glow"></div>
+    <svg class="hearth" viewBox="0 0 400 300" preserveAspectRatio="xMidYMax meet">
+      <defs>
+        <linearGradient id="potBody" x1="0" x2="1">
+          <stop offset="0" stop-color="#3b3942"/>
+          <stop offset=".35" stop-color="#24232a"/>
+          <stop offset="1" stop-color="#121115"/>
+        </linearGradient>
+        <linearGradient id="flameOuter" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#e2381b"/>
+          <stop offset=".55" stop-color="#ff8a1f"/>
+          <stop offset="1" stop-color="#ffd24d"/>
+        </linearGradient>
+        <linearGradient id="flameInner" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffb02e"/>
+          <stop offset="1" stop-color="#fff4b8"/>
+        </linearGradient>
+        <radialGradient id="stew" cx=".5" cy=".4" r=".7">
+          <stop offset="0" stop-color="#c2692c"/>
+          <stop offset="1" stop-color="#5a2d1a"/>
+        </radialGradient>
+        <path id="flameShape" d="M0,0 C-16,-8 -18,-30 -4,-48 C-3,-38 2,-36 4,-30 C10,-40 8,-52 2,-66 C16,-50 22,-24 16,-10 C12,-3 6,0 0,0Z"/>
+      </defs>
+
+      <!-- steam -->
+      <g class="steam" fill="none" stroke="#f3e9d6" stroke-width="5" stroke-linecap="round">
+        <path d="M160,100 C150,80 172,66 160,44"/>
+        <path d="M200,98 C190,74 214,62 202,34"/>
+        <path d="M240,100 C230,82 252,68 240,48"/>
+      </g>
+
+      <!-- handles + feet -->
+      <g fill="none" stroke="#17161a" stroke-width="9" stroke-linecap="round">
+        <path d="M72,128 C48,126 44,158 74,160"/>
+        <path d="M328,128 C352,126 356,158 326,160"/>
+      </g>
+      <g fill="#17161a">
+        <path d="M112,222 L128,222 L124,256 L108,256Z"/>
+        <path d="M272,222 L288,222 L292,256 L276,256Z"/>
+        <path d="M192,236 L208,236 L208,260 L192,260Z"/>
+      </g>
+
+      <!-- pot -->
+      <path d="M68,120 C58,196 112,242 200,242 C288,242 342,196 332,120Z" fill="url(#potBody)"/>
+      <path d="M86,150 C88,190 112,216 142,228" fill="none" stroke="#ffffff" stroke-opacity=".12" stroke-width="5" stroke-linecap="round"/>
+      <ellipse cx="200" cy="120" rx="133" ry="17" fill="#1c1b20"/>
+      <ellipse cx="200" cy="121" rx="119" ry="11" fill="url(#stew)"/>
+      <g class="bubbles" fill="#f4b36a" fill-opacity=".85">
+        <circle class="b b1" cx="160" cy="121" r="5"/>
+        <circle class="b b2" cx="214" cy="119" r="7"/>
+        <circle class="b b3" cx="250" cy="123" r="4"/>
+      </g>
+
+      <!-- fire -->
+      <g class="embers" fill="#ff7a1a">
+        <circle cx="150" cy="266" r="3"/><circle cx="196" cy="270" r="3.5"/><circle cx="238" cy="266" r="3"/><circle cx="268" cy="272" r="2.5"/>
+      </g>
+      <g class="flames">
+        <g transform="translate(138 268) scale(.8)"><use class="flame fl1" href="#flameShape" fill="url(#flameOuter)"/></g>
+        <g transform="translate(262 268) scale(.8)"><use class="flame fl2" href="#flameShape" fill="url(#flameOuter)"/></g>
+        <g transform="translate(166 270) scale(1.05)"><use class="flame fl3" href="#flameShape" fill="url(#flameOuter)"/></g>
+        <g transform="translate(234 270) scale(1.05)"><use class="flame fl4" href="#flameShape" fill="url(#flameOuter)"/></g>
+        <g transform="translate(200 272) scale(1.3)"><use class="flame fl5" href="#flameShape" fill="url(#flameOuter)"/></g>
+        <g transform="translate(200 272) scale(.8)"><use class="flame fl6" href="#flameShape" fill="url(#flameInner)"/></g>
+        <g transform="translate(166 270) scale(.6)"><use class="flame fl4" href="#flameShape" fill="url(#flameInner)"/></g>
+        <g transform="translate(234 270) scale(.6)"><use class="flame fl3" href="#flameShape" fill="url(#flameInner)"/></g>
+      </g>
+
+      <!-- logs -->
+      <g>
+        <rect x="96" y="270" width="208" height="24" rx="12" fill="#4a2f1c" transform="rotate(-4 200 282)"/>
+        <rect x="104" y="274" width="196" height="22" rx="11" fill="#5a3a22" transform="rotate(5 200 285)"/>
+        <ellipse cx="108" cy="285" rx="7" ry="11" fill="#8a6038" transform="rotate(5 200 285)"/>
+        <ellipse cx="292" cy="278" rx="7" ry="11" fill="#8a6038" transform="rotate(-4 200 282)"/>
+      </g>
+    </svg>
+  </div>
+
+  <header class="top">
+    <h1 class="logo">Chichecipes</h1>
+
+    <!-- happy black & white mascot -->
+    <svg class="cat" viewBox="0 0 130 120" role="img" aria-label="A happy black and white cat">
+      <defs><clipPath id="headClip"><ellipse cx="60" cy="52" rx="32" ry="27"/></clipPath></defs>
+      <g class="tail"><path d="M92,102 C120,100 124,70 112,52" fill="none" stroke="#2b2622" stroke-width="11" stroke-linecap="round"/></g>
+      <ellipse cx="60" cy="92" rx="33" ry="25" fill="#fffdf8" stroke="#2b2622" stroke-width="3"/>
+      <ellipse cx="46" cy="110" rx="10" ry="6.5" fill="#fffdf8" stroke="#2b2622" stroke-width="3"/>
+      <ellipse cx="74" cy="110" rx="10" ry="6.5" fill="#fffdf8" stroke="#2b2622" stroke-width="3"/>
+      <g class="head">
+        <path d="M33,38 L30,12 L54,28Z" fill="#2b2622" stroke="#2b2622" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M87,38 L90,12 L66,28Z" fill="#fffdf8" stroke="#2b2622" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M84,33 L86,20 L74,28Z" fill="#f4b6b6"/>
+        <ellipse cx="60" cy="52" rx="32" ry="27" fill="#fffdf8"/>
+        <g clip-path="url(#headClip)"><ellipse cx="40" cy="32" rx="19" ry="14" fill="#2b2622"/></g>
+        <ellipse cx="60" cy="52" rx="32" ry="27" fill="none" stroke="#2b2622" stroke-width="3"/>
+        <path class="eye" d="M40,54 Q46,45 52,54" fill="none" stroke="#2b2622" stroke-width="3" stroke-linecap="round"/>
+        <path class="eye" d="M68,54 Q74,45 80,54" fill="none" stroke="#2b2622" stroke-width="3" stroke-linecap="round"/>
+        <ellipse cx="38" cy="62" rx="6" ry="4" fill="#f4a3a3" opacity=".6"/>
+        <ellipse cx="82" cy="62" rx="6" ry="4" fill="#f4a3a3" opacity=".6"/>
+        <path d="M56,59 L64,59 L60,64Z" fill="#e98a96" stroke="#2b2622" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M60,64 L60,67 M60,67 Q54,73 49,66 M60,67 Q66,73 71,66" fill="none" stroke="#2b2622" stroke-width="2.4" stroke-linecap="round"/>
+        <g stroke="#2b2622" stroke-width="1.6" stroke-linecap="round">
+          <path d="M26,58 L10,54 M26,63 L10,64 M94,58 L110,54 M94,63 L110,64"/>
+        </g>
+      </g>
+    </svg>
+  </header>
+
+  <main>
+    <p class="lede">pick a page from the book</p>
+    <section id="grid" class="grid" aria-label="Recipes"></section>
+  </main>
+
+  <div class="veil" id="veil" hidden></div>
+  <article class="sheet paper" id="sheet" role="dialog" aria-modal="true" hidden></article>
+
+  <script src="recipes.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
