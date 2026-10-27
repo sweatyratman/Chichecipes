@@ -35,37 +35,49 @@ window.Sprites = (() => {
   const url = c => c.toDataURL();
   const sheet = (fw, fh, frames, fn) => { const [c, x] = make(fw * frames, fh); for (let i = 0; i < frames; i++) { x.save(); x.translate(fw * i, 0); x.beginPath(); x.rect(0, 0, fw, fh); x.clip(); fn(x, i); x.restore(); } return [c, x]; };
 
-  /* ───────── the cat ───────── */
-  const CAT_W = 31, CAT_H = 25;
+  /* ───────── the cat: side-on, standing on all fours ───────── */
+  const CAT_W = 40, CAT_H = 24;
+  const tri = (ctx, p0, p1, p2, col) => {
+    const minX = Math.min(p0[0], p1[0], p2[0]), maxX = Math.max(p0[0], p1[0], p2[0]), minY = Math.min(p0[1], p1[1], p2[1]), maxY = Math.max(p0[1], p1[1], p2[1]);
+    const sign = (a, b, c) => (a[0] - c[0]) * (b[1] - c[1]) - (b[0] - c[0]) * (a[1] - c[1]);
+    for (let y = minY; y <= maxY; y++) for (let x = minX; x <= maxX; x++) {
+      const p = [x + 0.5, y + 0.5], d1 = sign(p, p0, p1), d2 = sign(p, p1, p2), d3 = sign(p, p2, p0);
+      if (!((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0))) dot(ctx, 0, x, y, col);
+    }
+  };
   function cat() {
-    const half = [
-      '', '.....kk', '....kwpk', '....kwwpk', '....kkkkkkkkk',
-      '....kwwwwwwww', '....kwwwwwwww', '....kwwwwwwww', '....kwwwewwww', '....kwwewewww',
-      '....kccwwwwwp', '....kwwwwwwkw', '.....kwwwwwwk', '......krrrrrr', '.....kwwwwwwy',
-      '....kwwwwwwww', '....kwwwwwwww', '....kwwwwwwww', '....kwwwwwwww', '....kwwwwwwww',
-      '....kwwwwwwww', '....kwwwwwwww', '...kwwwwwwwwk', '...kwwkwwkwwk', '...kkkkkkkkkk',
-    ];
-    const grid = mirror(half, 13);
-    const pal = { k: '#2a1d17', w: '#fff8ea', g: '#dccdb6', b: '#3b2e28', p: '#ef9aa4', c: '#f7bcbc', r: '#c4412f', y: '#f4c04e', e: '#2a1d17' };
-    const patches = [
-      [5, 2], [6, 2], [5, 3], [6, 3], [7, 3],
-      [5, 5], [6, 5], [7, 5], [8, 5], [9, 5], [10, 5], [11, 5], [5, 6], [6, 6], [7, 6], [8, 6], [9, 6], [10, 6], [5, 7], [6, 7], [7, 7], [8, 7],
-      [5, 16], [6, 16], [7, 16], [8, 16], [5, 17], [6, 17], [7, 17], [8, 17], [5, 18], [6, 18], [7, 18], [5, 19], [6, 19], [5, 20],
-      [19, 18], [20, 18], [20, 19], [19, 19],
-    ];
+    const W = '#fff8ea', G = '#e4d6bf', B = '#2f2420', P = '#ef9aa4', E = '#2a1d17';
+    const ellipse = (ctx, cx, cy, rx, ry, fn) => { for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++) for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++) { const dx = (x + 0.5 - cx) / rx, dy = (y + 0.5 - cy) / ry; if (dx * dx + dy * dy <= 1) dot(ctx, 0, x, y, fn(dx, dy, x, y)); } };
     const tails = [
-      [[22, 22], [23, 22], [24, 22], [25, 21], [26, 21], [27, 20], [27, 19], [27, 18], [28, 17], [28, 16], [28, 15]],
-      [[22, 22], [23, 22], [24, 22], [25, 21], [26, 20], [27, 19], [28, 19], [29, 18], [29, 17], [29, 16], [28, 15]],
+      [[32, 12], [33, 11], [34, 9], [35, 7], [35, 5], [34, 3], [33, 2]],
+      [[32, 12], [33, 11], [34, 9], [35, 8], [36, 6], [36, 4], [35, 3]],
     ];
-    const [c, x] = sheet(CAT_W, CAT_H, 2, (ctx, f) => {
-      rows(ctx, grid, pal);
-      for (let px = 6; px < 20; px++) dot(ctx, 0, px, 15, pal.g);
-      patches.forEach(([px, py]) => dot(ctx, 0, px, py, pal.b));
-      [[12, 14], [13, 14], [12, 15], [13, 15]].forEach(([px, py]) => dot(ctx, 0, px, py, pal.y));
-      dot(ctx, 0, 12, 14, '#fff0b0');
-      tails[f].forEach(([px, py], i) => { const tip = i >= tails[f].length - 2; dot(ctx, 0, px, py, tip ? pal.w : pal.b); dot(ctx, 0, px + 1, py, tip ? pal.w : pal.b); dot(ctx, 0, px, py + 1, tip ? pal.w : pal.b); });
-      if (f === 1) { dot(ctx, 0, 8, 8, pal.w); dot(ctx, 0, 17, 8, pal.w); dot(ctx, 0, 7, 9, pal.e); dot(ctx, 0, 9, 9, pal.e); dot(ctx, 0, 8, 9, pal.e); dot(ctx, 0, 16, 9, pal.e); dot(ctx, 0, 18, 9, pal.e); dot(ctx, 0, 17, 9, pal.e); }
+    const rect = (ctx, x0, y0, w, h, col) => { for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) dot(ctx, 0, x, y, col); };
+    const [c, x] = sheet(CAT_W, 24, 2, (ctx, f) => {
+      // far legs, body, near legs
+      rect(ctx, 17, 17, 2, 6, G); rect(ctx, 23, 17, 2, 6, G);
+      ellipse(ctx, 22, 13.5, 11.5, 5.2, (dx, dy) => (dy > 0.5 ? G : dx > 0.05 && dy < 0.25 ? B : W));
+      rect(ctx, 13, 16, 2, 7, W); rect(ctx, 27, 16, 2, 7, W);
+      [[12, 23], [13, 23], [14, 23], [15, 23], [26, 23], [27, 23], [28, 23], [29, 23]].forEach(([px, py]) => dot(ctx, 0, px, py, W));
+      [[16, 23], [17, 23], [18, 23], [22, 23], [23, 23], [24, 23]].forEach(([px, py]) => dot(ctx, 0, px, py, G));
+      // tail
+      tails[f].forEach(([px, py], i) => { const tip = i >= tails[f].length - 2; dot(ctx, 0, px, py, tip ? W : B); dot(ctx, 0, px + 1, py, tip ? W : B); dot(ctx, 0, px, py + 1, tip ? W : B); });
+      // ears, then a round head
+      tri(ctx, [4, 7], [5, 2], [8, 5], B);
+      tri(ctx, [9, 5], [12, 2], [13, 7], W);
+      dot(ctx, 0, 12, 4, P); dot(ctx, 0, 12, 5, P);
+      ellipse(ctx, 8.5, 11, 5.8, 5.4, (dx, dy) => (dy < -0.45 && dx < 0.25 ? B : W));
+      // happy closed eye, nose, smile, blush, whiskers
+      [[5, 11], [6, 10], [7, 10], [8, 11]].forEach(([px, py]) => dot(ctx, 0, px, py, E));
+      dot(ctx, 0, 3, 12, P); dot(ctx, 0, 3, 13, P); dot(ctx, 0, 2, 12, P);
+      [[3, 14], [4, 15], [5, 15], [6, 14]].forEach(([px, py]) => dot(ctx, 0, px, py, E));
+      [[6, 13], [7, 13]].forEach(([px, py]) => dot(ctx, 0, px, py, '#f7bcbc'));
+      [[0, 11], [0, 14]].forEach(([px, py]) => dot(ctx, 0, px, py, '#b9ab97'));
+      // collar + bell
+      for (let py = 15; py < 18; py++) { dot(ctx, 0, 12, py, '#c4412f'); dot(ctx, 0, 13, py, '#c4412f'); dot(ctx, 0, 14, py, '#c4412f'); }
+      dot(ctx, 0, 13, 18, '#f4c04e'); dot(ctx, 0, 13, 19, '#f4c04e'); dot(ctx, 0, 14, 18, '#c48a2c');
     });
+    outline(c, x, '#1a0f0c');
     return url(c);
   }
 
@@ -229,6 +241,33 @@ window.Sprites = (() => {
         }
       }
       for (let px = 1; px < 23; px++) { dot(ctx, 0, px, 12, '#fff8e6'); dot(ctx, 0, px, 13, px < 6 ? '#efe2c4' : '#d8c89f'); }
+    });
+    outline(c, x, '#3a2418');
+    return url(c);
+  }
+
+  function mug() {
+    const [c, x] = padded(24, 22, 1, ctx => {
+      // steam
+      [[8, 1], [9, 2], [8, 3], [9, 4], [13, 0], [12, 1], [13, 2], [12, 3]].forEach(([px, py]) => dot(ctx, 0, px, py, '#efe7da'));
+      // handle
+      for (let py = 10; py <= 17; py++) { dot(ctx, 0, 18, py, '#b24a34'); }
+      for (let px = 16; px <= 19; px++) { dot(ctx, 0, px, 10, '#b24a34'); dot(ctx, 0, px, 17, '#b24a34'); }
+      dot(ctx, 0, 19, 11, '#b24a34'); dot(ctx, 0, 19, 16, '#b24a34');
+      // body
+      for (let py = 7; py <= 20; py++) {
+        const inset = py >= 19 ? 1 : 0;
+        for (let px = 2 + inset; px <= 16 - inset; px++) {
+          const u = (px - 2) / 14;
+          let col = u < 0.2 ? '#e8826a' : u > 0.78 ? '#9a3c2a' : '#c9533b';
+          if (py === 12 || py === 13) col = u < 0.2 ? '#fff3dc' : u > 0.78 ? '#d6c5a4' : '#f4e6c8';
+          dot(ctx, 0, px, py, col);
+        }
+      }
+      // cocoa + marshmallows
+      for (let px = 3; px <= 15; px++) { dot(ctx, 0, px, 7, '#4a2a1c'); dot(ctx, 0, px, 8, px % 5 === 0 ? '#7a4a30' : '#5e3622'); }
+      [[5, 5], [6, 5], [5, 6], [6, 6], [10, 5], [11, 5], [10, 6], [11, 6]].forEach(([px, py]) => dot(ctx, 0, px, py, '#fff8ea'));
+      [[6, 6], [11, 6]].forEach(([px, py]) => dot(ctx, 0, px, py, '#e4d6bf'));
     });
     outline(c, x, '#3a2418');
     return url(c);
@@ -478,6 +517,6 @@ window.Sprites = (() => {
     return url(c);
   }
 
-  return { bricksDusk, bricksLit, wallDusk2, wallLit2, mantelTile, surround, firebox, candle, web, spider, cat, pot, fire, logs, well, quill, iceCream, pin, corner, flourish, blot, wallDusk, wallLit, rng, make, dot,
+  return { bricksDusk, bricksLit, wallDusk2, wallLit2, mantelTile, surround, firebox, candle, web, spider, cat, pot, fire, logs, well, quill, iceCream, mug, pin, corner, flourish, blot, wallDusk, wallLit, rng, make, dot,
     size: { cat: [CAT_W, CAT_H], pot: [POT_W, POT_H], fire: [FIRE_W, FIRE_H], logs: [LOGS_W, LOGS_H], well: [WELL_W, WELL_H], quill: [QUILL_W, QUILL_H] } };
 })();

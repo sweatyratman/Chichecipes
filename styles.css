@@ -98,7 +98,7 @@ body.cooking .glow-wrap { opacity: 1; }
 @keyframes pulse { from { opacity: .8; } to { opacity: 1; } }
 
 /* ───────────── header ───────────── */
-.top { position: relative; z-index: 2; display: flex; align-items: flex-end; justify-content: center; gap: clamp(4px, 1.4vw, 14px); padding: 62px 16px 0; }
+.top { position: relative; z-index: 2; display: flex; align-items: flex-end; justify-content: center; gap: clamp(4px, 1.4vw, 14px); padding: calc(24px * var(--cps) + 14px) 16px 0; }
 .sign {
   position: relative; margin: 0; padding: calc(4px * var(--hps)) calc(8px * var(--hps)) calc(5px * var(--hps));
   font-family: var(--pixel); font-weight: 700; font-size: clamp(1.7rem, 7.2vw, 4.2rem); line-height: 1; letter-spacing: .02em; color: #f6e2b0;
@@ -116,9 +116,9 @@ body.cooking .glow-wrap { opacity: 1; }
 .chain { position: absolute; bottom: 100%; width: 8px; height: 70px; margin-bottom: -2px; background: repeating-linear-gradient(#8f8da0 0 4px, #3c3a48 4px 6px, #6b697c 6px 10px, #2a2834 10px 12px); box-shadow: 0 2px 0 rgba(0, 0, 0, .35); clip-path: none; }
 .chain.l { left: 14%; } .chain.r { right: 14%; }
 @keyframes signSway { 0%, 100% { transform: rotate(-.7deg); } 50% { transform: rotate(.7deg); } }
-.cat { position: relative; flex: none; width: calc(31px * var(--cps)); height: calc(25px * var(--cps)); background-image: var(--img-cat); background-size: calc(62px * var(--cps)) calc(25px * var(--cps)); animation: catFrames 1.4s steps(2) infinite; filter: drop-shadow(0 4px 0 rgba(15, 6, 0, .5)); cursor: pointer; margin-bottom: 2px; }
+.cat { display: block; right: 14%; bottom: calc(100% - 3px); width: calc(40px * var(--cps)); height: calc(24px * var(--cps)); background-image: var(--img-cat); background-size: calc(80px * var(--cps)) calc(24px * var(--cps)); animation: catFrames 1.6s steps(2) infinite; filter: drop-shadow(0 3px 0 rgba(15, 6, 0, .45)); cursor: pointer; }
 .cat:hover { animation-duration: .5s; }
-@keyframes catFrames { to { background-position-x: calc(-62px * var(--cps)); } }
+@keyframes catFrames { to { background-position-x: calc(-80px * var(--cps)); } }
 
 
 /* ───────────── paper: aged, foxed, singed at the edges ───────────── */

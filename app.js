@@ -51,6 +51,7 @@
   }
 
   function describe(ing, scale) {
+    if (ing.text) return { qty: '', name: ing.text, note: '' };
     const a = amount(ing.qty * scale, ing.unit, ing.whole);
     const name = typeof ing.name === 'string' ? ing.name : (a.value > 1 ? ing.name.many : ing.name.one);
     let note = '';
@@ -75,7 +76,7 @@
     IMG.cat = S.cat(); IMG.pot = S.pot(); IMG.fire = S.fire(); IMG.fireLow = S.fire(true); IMG.logs = S.logs();
     IMG.well = S.well(); IMG.quill = S.quill(); IMG.pin = S.pin(); IMG.flourish = S.flourish(); IMG.blot = S.blot();
     IMG.corner = S.corner();
-    IMG.doodles = { iceCream: { src: S.iceCream(), w: 26 } };
+    IMG.doodles = { iceCream: { src: S.iceCream(), w: 26 }, mug: { src: S.mug(), w: 26 } };
     const wax = ['#fff4dc', '#f1e1bf', '#cdb88e'];
     const set = (k, v) => rootStyle.setProperty(k, `url(${v})`);
     set('--img-cat', IMG.cat); set('--img-pot', IMG.pot); set('--img-fire', IMG.fire); set('--img-fire-low', IMG.fireLow); set('--img-logs', IMG.logs);
