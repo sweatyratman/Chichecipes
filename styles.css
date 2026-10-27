@@ -101,7 +101,7 @@ body.cooking .glow-wrap { opacity: 1; }
 .top { position: relative; z-index: 2; display: flex; align-items: flex-end; justify-content: center; gap: clamp(4px, 1.4vw, 14px); padding: calc(24px * var(--cps) + 14px) 16px 0; }
 .sign {
   position: relative; margin: 0; padding: calc(4px * var(--hps)) calc(8px * var(--hps)) calc(5px * var(--hps));
-  font-family: var(--pixel); font-weight: 700; font-size: clamp(1.7rem, 7.2vw, 4.2rem); line-height: 1; letter-spacing: .02em; color: #f6e2b0;
+  font-family: var(--pixel); font-weight: 700; font-size: clamp(2rem, 8.8vw, 5.4rem); line-height: 1; letter-spacing: .02em; color: #f6e2b0;
   text-shadow: 0 3px 0 #3a1e0c, 3px 0 0 #3a1e0c, -3px 0 0 #3a1e0c, 0 -3px 0 #3a1e0c, 3px 3px 0 #3a1e0c, -3px 3px 0 #3a1e0c, 0 6px 0 rgba(20, 8, 2, .55);
   background: var(--img-mantel) 0 0 / calc(16px * var(--hps)) calc(8px * var(--hps)); image-rendering: pixelated;
   box-shadow: inset 0 0 0 4px #1d0f07, inset 0 0 0 8px #5a3720, inset 0 -10px 0 8px rgba(20, 8, 2, .25);
@@ -124,11 +124,12 @@ body.cooking .glow-wrap { opacity: 1; }
 /* ───────────── paper: aged, foxed, singed at the edges ───────────── */
 .paper {
   background:
+    radial-gradient(circle at var(--bx, 100%) var(--by, 100%), rgba(70, 28, 4, var(--ba, .2)), transparent 36%),
     radial-gradient(ellipse at 14% 20%, rgba(150, 90, 30, .2), transparent 28%),
     radial-gradient(ellipse at 88% 86%, rgba(130, 76, 20, .22), transparent 30%),
     var(--noise), var(--fibres),
     radial-gradient(ellipse 80% 70% at 30% 18%, rgba(255, 244, 208, .6), transparent 70%),
-    var(--paper);
+    var(--tone, var(--paper));
   box-shadow:
     inset 0 0 40px rgba(130, 76, 20, .5), inset 0 0 8px rgba(80, 40, 8, .55),
     0 4px 0 rgba(15, 6, 0, .6), 0 12px 22px rgba(10, 3, 0, .45);
@@ -154,10 +155,18 @@ body.cooking .glow-wrap { opacity: 1; }
 .pin { position: absolute; z-index: 3; top: calc(-3px * var(--dps)); left: 50%; width: calc(8px * var(--dps)); height: calc(8px * var(--dps)); margin-left: calc(-4px * var(--dps)); image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(20, 6, 0, .45)); pointer-events: none; }
 .hole { position: absolute; z-index: 0; top: calc(1px * var(--dps)); left: 50%; width: calc(2px * var(--dps)); height: calc(2px * var(--dps)); margin-left: calc(-1px * var(--dps)); background: #140a08; opacity: 0; }
 .slot.open .hole { opacity: 1; }
-.slot.open .pin { animation: pinOut .5s steps(5) forwards; }
-.slot.pin-in .pin { animation: pinIn .55s steps(5); }
-@keyframes pinOut { 40% { transform: translateY(calc(-6px * var(--dps))) scale(1.25); } 100% { transform: translateY(calc(-26px * var(--dps))) scale(1.5) rotate(25deg); opacity: 0; } }
-@keyframes pinIn { 0% { transform: translateY(calc(-16px * var(--dps))) scale(1.45) rotate(-20deg); } 70% { transform: translateY(calc(-3px * var(--dps))) scale(1.12); } }
+.slot.open .pin { animation: pinOut .6s steps(6) forwards; }
+.slot.pin-in .pin { animation: pinIn .9s steps(9); }
+.slot.pin-in .card { animation: thunk .9s steps(9); }
+@keyframes pinOut { 25% { transform: translate(calc(2px * var(--dps)), calc(-4px * var(--dps))) scale(1.25) rotate(-10deg); } 100% { transform: translate(calc(44px * var(--dps)), calc(-4px * var(--dps))) scale(1.4) rotate(80deg); opacity: 0; } }
+@keyframes pinIn {
+  0% { transform: translate(calc(-44px * var(--dps)), calc(-4px * var(--dps))) scale(1.4) rotate(-80deg); opacity: 0; }
+  15% { opacity: 1; }
+  60% { transform: translate(calc(-6px * var(--dps)), calc(-4px * var(--dps))) scale(1.3) rotate(-14deg); }
+  78% { transform: translate(0, calc(-5px * var(--dps))) scale(1.3) rotate(0deg); }
+  90% { transform: translate(0, calc(1px * var(--dps))) scale(.92); }
+}
+@keyframes thunk { 0%, 86% { transform: rotate(var(--rot)); } 90% { transform: rotate(var(--rot)) translateY(calc(2px * var(--dps))); } 100% { transform: rotate(var(--rot)); } }
 .card:hover, .card:focus-visible { transform: rotate(0deg) translateY(-5px); }
 .card:focus-visible { outline: 3px solid #ffcf7a; outline-offset: 5px; }
 .card.pressed { transition: none; transform: rotate(var(--rot)); }
@@ -185,7 +194,7 @@ img.doodle { flex: none; width: calc(var(--nw, 26) * 1px * var(--dps)); height: 
     var(--img-c-bl) bottom left / calc(11px * var(--dps)) calc(11px * var(--dps)) no-repeat,
     var(--img-c-br) bottom right / calc(11px * var(--dps)) calc(11px * var(--dps)) no-repeat;
 }
-.page.paper { background-image: linear-gradient(90deg, rgba(50, 22, 4, .42), transparent 7%), radial-gradient(circle at 80% 80%, rgba(140, 80, 24, .18) 0 7%, rgba(140, 80, 24, .06) 8% 10%, transparent 11%), radial-gradient(ellipse at 90% 10%, rgba(120, 70, 20, .22), transparent 24%), radial-gradient(ellipse at 14% 20%, rgba(150, 90, 30, .2), transparent 28%), radial-gradient(ellipse at 88% 86%, rgba(130, 76, 20, .22), transparent 30%), var(--noise), var(--fibres), radial-gradient(ellipse 80% 70% at 30% 18%, rgba(255, 244, 208, .6), transparent 70%); background-color: var(--paper); }
+.page.paper { background-image: radial-gradient(circle at var(--bx, 100%) var(--by, 100%), rgba(70, 28, 4, var(--ba, .2)), transparent 36%), linear-gradient(90deg, rgba(50, 22, 4, .42), transparent 7%), radial-gradient(circle at 80% 80%, rgba(140, 80, 24, .18) 0 7%, rgba(140, 80, 24, .06) 8% 10%, transparent 11%), radial-gradient(ellipse at 90% 10%, rgba(120, 70, 20, .22), transparent 24%), radial-gradient(ellipse at 14% 20%, rgba(150, 90, 30, .2), transparent 28%), radial-gradient(ellipse at 88% 86%, rgba(130, 76, 20, .22), transparent 30%), var(--noise), var(--fibres), radial-gradient(ellipse 80% 70% at 30% 18%, rgba(255, 244, 208, .6), transparent 70%); background-color: var(--tone, var(--paper)); }
 .stage.folded > .page { clip-path: inset(-80px -80px 50% -80px); }
 .stage.folded > .inner { clip-path: inset(0 0 50% 0); }
 .inner {
@@ -193,10 +202,11 @@ img.doodle { flex: none; width: calc(var(--nw, 26) * 1px * var(--dps)); height: 
   padding: clamp(24px, 4vw, 34px) clamp(58px, 9vw, 68px) 22px clamp(34px, 7vw, 58px);
   scrollbar-width: thin; scrollbar-color: rgba(120, 84, 52, .45) transparent;
 }
-.coffee { position: absolute; right: 22%; bottom: 14%; width: 96px; height: 96px; border-radius: 50%; pointer-events: none; opacity: .55; border: 3px solid rgba(150, 96, 44, .18); box-shadow: inset 0 0 0 1px rgba(150, 96, 44, .1); transform: rotate(20deg) scaleY(.96); }
-img.blot { position: absolute; width: calc(16px * var(--dps) * .6); image-rendering: pixelated; opacity: .8; pointer-events: none; }
-img.blot.b1 { left: 5%; bottom: 8%; transform: rotate(14deg); }
-img.blot.b2 { right: 24%; top: 10%; transform: rotate(-30deg) scale(.6); }
+.coffee { position: absolute; border-radius: 50%; pointer-events: none; border: 3px solid rgba(150, 96, 44, .2); box-shadow: inset 0 0 0 1px rgba(150, 96, 44, .12), 0 0 0 1px rgba(150, 96, 44, .08); }
+.crease { position: absolute; pointer-events: none; }
+.crease.h { left: 0; right: 0; height: 3px; background: linear-gradient(rgba(70, 36, 8, .22), rgba(255, 246, 218, .55)); }
+.crease.v { top: 0; bottom: 0; width: 3px; background: linear-gradient(90deg, rgba(70, 36, 8, .22), rgba(255, 246, 218, .55)); }
+img.blot { position: absolute; width: calc(16px * var(--dps) * .6); image-rendering: pixelated; pointer-events: none; }
 
 .flap { position: absolute; left: 0; top: 50%; width: 100%; height: 50%; transform-origin: 50% 0; transform-style: preserve-3d; pointer-events: none; will-change: transform; }
 .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
@@ -248,17 +258,14 @@ img.orn { display: block; width: calc(40px * var(--dps)); max-width: 72%; height
 .quill img { position: static; width: 100%; height: 100%; display: block; image-rendering: pixelated; }
 
 /* ───────────── pixel buttons ───────────── */
-.backbtn, .tab, .shelf-arrow {
+.tab, .shelf-arrow {
   clip-path: polygon(0 4px, 4px 4px, 4px 0, calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px));
   font-family: var(--pixel); font-weight: 700; color: #fff0cf; border: 0; cursor: pointer;
   background: linear-gradient(#b57a44 0 50%, #9d6535 50%);
   box-shadow: inset 0 0 0 3px #3a1e0c, inset 0 5px 0 3px rgba(255, 224, 170, .35);
 }
-.backbtn { position: fixed; z-index: 40; top: 14px; left: 14px; display: flex; align-items: center; gap: 10px; padding: 14px 24px 14px 18px; font-size: 1.2rem; text-shadow: 0 2px 0 #3a1e0c; opacity: 0; transform: translateX(-12px); pointer-events: none; transition: opacity .5s steps(5), transform .5s steps(5); }
-.backbtn svg { width: 16px; height: 20px; fill: currentColor; }
-.backbtn.on { opacity: 1; transform: none; pointer-events: auto; transition-delay: .5s; }
-.backbtn:hover, .tab:hover, .shelf-arrow:hover { filter: brightness(1.12); }
-.backbtn:focus-visible, .tab:focus-visible { outline: 3px solid #ffcf7a; outline-offset: 2px; }
+.tab:hover, .shelf-arrow:hover { filter: brightness(1.12); }
+.tab:focus-visible { outline: 3px solid #ffcf7a; outline-offset: 2px; }
 
 .scalebar { position: absolute; top: 56px; right: 8px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; pointer-events: auto; filter: drop-shadow(0 4px 0 rgba(20, 8, 0, .55)); }
 .tab { display: flex; align-items: center; justify-content: center; width: 44px; height: 32px; padding: 0; font-size: 1rem; text-shadow: 0 2px 0 #3a1e0c; transition: transform .15s steps(3); }
@@ -284,8 +291,8 @@ img.orn { display: block; width: calc(40px * var(--dps)); max-width: 72%; height
 /* ───────────── the shelf: a scrolling pinboard on the chimney breast ───────────── */
 .shelf-wrap { position: fixed; z-index: 2; left: 50%; transform: translateX(-50%); width: calc(var(--wb) - 16px * var(--hps)); top: var(--shelf-top, 150px); height: var(--shelf-h, 340px); }
 .shelf {
-  position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain; scroll-snap-type: y proximity; scroll-padding-top: calc(6px * var(--dps)); scrollbar-width: none;
-  padding: calc(6px * var(--dps)) clamp(6px, 2vw, 16px) 18px;
+  position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain; scroll-snap-type: y proximity; scroll-padding-top: calc(9px * var(--dps)); scrollbar-width: none;
+  padding: calc(9px * var(--dps)) clamp(6px, 2vw, 16px) 18px;
   -webkit-mask-image: linear-gradient(transparent 0, #000 4px, #000 calc(100% - 26px), transparent 100%);
   mask-image: linear-gradient(transparent 0, #000 4px, #000 calc(100% - 26px), transparent 100%);
 }
@@ -301,3 +308,4 @@ img.orn { display: block; width: calc(40px * var(--dps)); max-width: 72%; height
 @media (max-width: 520px) {
   .top { justify-content: flex-start; padding-left: 14px; padding-right: 96px; gap: 6px; }
 }
+.stage:focus { outline: none; }

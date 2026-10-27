@@ -299,8 +299,8 @@ window.Sprites = (() => {
     return url(c);
   }
 
-  function blot() {
-    const r = rng(11);
+  function blot(seed = 11) {
+    const r = rng(seed);
     const [c, x] = make(16, 14);
     for (let py = 0; py < 14; py++) for (let px = 0; px < 16; px++) {
       const dx = px - 7, dy = py - 6.5, d = Math.sqrt(dx * dx + dy * dy);

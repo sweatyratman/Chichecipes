@@ -76,6 +76,7 @@
     IMG.cat = S.cat(); IMG.pot = S.pot(); IMG.fire = S.fire(); IMG.fireLow = S.fire(true); IMG.logs = S.logs();
     IMG.well = S.well(); IMG.quill = S.quill(); IMG.pin = S.pin(); IMG.flourish = S.flourish(); IMG.blot = S.blot();
     IMG.corner = S.corner();
+    IMG.blots = [11, 23, 37, 51].map(sd => S.blot(sd));
     IMG.doodles = { iceCream: { src: S.iceCream(), w: 26 }, mug: { src: S.mug(), w: 26 } };
     const wax = ['#fff4dc', '#f1e1bf', '#cdb88e'];
     const set = (k, v) => rootStyle.setProperty(k, `url(${v})`);
@@ -105,11 +106,28 @@
     ['tall c1', 'mid c2', 'stub c3', 'tall c4'].forEach(cls => { const c = document.createElement('i'); c.className = `cndl ${cls}`; mantel.appendChild(c); });
   }
 
+  /* ───────── wear and tear: every page ages a little differently ───────── */
+  function wearFor(id) {
+    let h = 2166136261;
+    for (const ch of id) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); }
+    const r = S.rng(h >>> 0), pick = a => a[Math.floor(r() * a.length)];
+    const [bx, by] = pick([[0, 0], [100, 0], [0, 100], [100, 100]]);
+    return {
+      tone: pick(['#ead7a6', '#e5cf98', '#efdcae', '#e1c98f']),
+      bx: bx + '%', by: by + '%', ba: (0.14 + r() * 0.22).toFixed(2),
+      blots: Array.from({ length: 1 + Math.floor(r() * 3) }, () => ({ x: 5 + r() * 84, y: 6 + r() * 82, rot: Math.floor(r() * 360), s: 0.5 + r() * 0.9, v: Math.floor(r() * 4) })),
+      ring: r() < 0.7 ? { x: 12 + r() * 60, y: 22 + r() * 56, d: 64 + r() * 70, o: 0.35 + r() * 0.35, rot: Math.floor(r() * 360) } : null,
+      crease: r() < 0.55 ? { h: r() < 0.5, pos: 22 + r() * 56 } : null,
+    };
+  }
+  function applyWear(el, w) {
+    el.style.setProperty('--tone', w.tone); el.style.setProperty('--bx', w.bx); el.style.setProperty('--by', w.by); el.style.setProperty('--ba', w.ba);
+  }
+
   /* ───────── the shelf ───────── */
   const grid = $('#grid');
   const stage = $('#stage');
   const veil = $('#veil');
-  const backBtn = $('#back');
   let current = null; // { recipe, card }
   let busy = false;
 
@@ -166,6 +184,7 @@
       slot.innerHTML = `<i class="hole"></i><img class="pin px" alt="" src="${IMG.pin}">`;
       const card = document.createElement('button');
       card.className = 'card paper';
+      applyWear(card, wearFor(r.id));
       card.type = 'button';
       card.dataset.id = r.id;
       card.setAttribute('aria-label', `Open ${r.title}`);
@@ -186,17 +205,25 @@
 
   /* ───────── the page ───────── */
 
+  function wearMarks(id) {
+    const w = wearFor(id);
+    let html = '';
+    if (w.ring) html += `<div class="coffee" style="left:${w.ring.x}%;top:${w.ring.y}%;width:${w.ring.d}px;height:${w.ring.d}px;opacity:${w.ring.o};transform:rotate(${w.ring.rot}deg) scaleY(.95)"></div>`;
+    if (w.crease) html += `<div class="crease ${w.crease.h ? 'h' : 'v'}" style="${w.crease.h ? 'top' : 'left'}:${w.crease.pos}%"></div>`;
+    w.blots.forEach(b => { html += `<img class="blot" alt="" src="${IMG.blots[b.v]}" style="left:${b.x}%;top:${b.y}%;opacity:${(0.6 + b.s * 0.25).toFixed(2)};transform:rotate(${b.rot}deg) scale(${b.s.toFixed(2)})">`; });
+    return html;
+  }
+
   function buildInner(r) {
     const inner = document.createElement('div');
     inner.className = 'inner';
     inner.innerHTML = `
-      <div class="coffee"></div>
-      <img class="blot b1" alt="" src="${IMG.blot}"><img class="blot b2" alt="" src="${IMG.blot}">
+      ${wearMarks(r.id)}
       <h2></h2>
       <img class="orn" alt="" src="${IMG.flourish}">
       <h3>Ingredients</h3>
       <ul class="ings"></ul>
-      <div class="foot">tap an ingredient to cross it off · tap the ink pot to start afresh</div>`;
+      <div class="foot">tap an ingredient to cross it off · tap the ink pot to start afresh · tap beside the page to close</div>`;
     const h2 = $('h2', inner);
     const cap = document.createElement('span');
     cap.className = 'cap';
@@ -486,6 +513,8 @@
   function buildStage(r) {
     stage.setAttribute('aria-label', r.title);
     stage.innerHTML = '<div class="page paper"></div>';
+    stage.tabIndex = -1;
+    applyWear($('.page', stage), wearFor(r.id));
     stage.append(buildInner(r));
     const tools = document.createElement('div');
     tools.className = 'tools';
@@ -517,13 +546,12 @@
     buildStage(r);
     updateQuantities(r, saved.scale[r.id] || 1);
     syncScalebar(r);
-    backBtn.classList.add('on');
     card.classList.add('lifted');
 
     if (reduced()) {
       $('.tools', stage).classList.add('on');
       busy = false;
-      backBtn.focus({ preventScroll: true });
+      stage.focus({ preventScroll: true });
       return;
     }
 
@@ -549,7 +577,7 @@
       $('.tools', stage).classList.add('on');
       relayoutStrikes();
       busy = false;
-      backBtn.focus({ preventScroll: true });
+      stage.focus({ preventScroll: true });
     }).catch(() => { busy = false; });
   }
 
@@ -558,7 +586,6 @@
     busy = true;
     const { card } = current;
     cancelJobs();
-    backBtn.classList.remove('on');
     document.body.classList.remove('cooking');
 
     const finish = () => {
@@ -605,11 +632,10 @@
     Promise.all([swing.finished, move.finished]).then(finish).catch(finish);
   }
 
-  backBtn.addEventListener('click', closeRecipe);
   veil.addEventListener('click', closeRecipe);
   // anywhere that isn't the page itself folds it back up
   document.addEventListener('pointerdown', e => {
-    if (current && !busy && !stage.contains(e.target) && !backBtn.contains(e.target)) closeRecipe();
+    if (current && !busy && !stage.contains(e.target)) closeRecipe();
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeRecipe(); });
 
