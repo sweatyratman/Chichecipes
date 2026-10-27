@@ -410,15 +410,19 @@ window.Sprites = (() => {
       }
       [[bx0 + bodyW - 1, 8 + 3], [bx0 + bodyW - 1, 8 + 4], [bx0, 8 + 6]].forEach(([px, py]) => dot(ctx, 0, px + (px === bx0 ? 0 : 0), py, wax[0]));
       dot(ctx, 0, cx, 7, '#2a1a12');
-      const fl = f ? [[cx, 3, '#ffd45a'], [cx, 4, '#ffd45a'], [cx, 5, '#fff3b8'], [cx, 6, '#fff3b8'], [cx - 1, 5, '#ff9d2e'], [cx + 1, 5, '#ff9d2e'], [cx + 1, 4, '#ff9d2e'], [cx, 2, '#ff9d2e']]
-                    : [[cx, 2, '#ffd45a'], [cx, 3, '#ffd45a'], [cx, 4, '#fff3b8'], [cx, 5, '#fff3b8'], [cx, 6, '#fff3b8'], [cx - 1, 5, '#ff9d2e'], [cx - 1, 4, '#ff9d2e'], [cx + 1, 5, '#ff9d2e'], [cx, 1, '#ff9d2e']];
-      fl.forEach(([px, py, col]) => dot(ctx, 0, px, py, col));
       const by = 8 + bodyH;
       for (let px = 0; px < W; px++) { dot(ctx, 0, px, by, px < 2 || px >= W - 2 ? '#8a5a1c' : '#e8b857'); dot(ctx, 0, px, by + 1, '#c8903a'); }
       for (let px = 1; px < W - 1; px++) dot(ctx, 0, px, by + 2, '#a8702a');
       for (let px = 2; px < W - 2; px++) dot(ctx, 0, px, by + 3, '#6c4416');
     });
     outline(c, x, '#1a0f08');
+    // flames go on after the outline so they glow instead of being ringed in brown
+    const O = '#ff9d2e', Y = '#ffd45a', Wt = '#fff3b8';
+    const flames = [
+      [[cx, 2, O], [cx, 3, O], [cx - 1, 4, O], [cx, 4, Y], [cx + 1, 4, O], [cx - 1, 5, O], [cx, 5, Wt], [cx + 1, 5, O], [cx, 6, Wt]],
+      [[cx + 1, 3, O], [cx, 3, O], [cx - 1, 4, O], [cx, 4, Y], [cx + 1, 4, O], [cx - 1, 5, O], [cx, 5, Wt], [cx + 1, 5, O], [cx, 6, Wt]],
+    ];
+    flames.forEach((fl, f) => fl.forEach(([px, py, col]) => dot(x, 0, W * f + px, py, col)));
     return url(c);
   }
 

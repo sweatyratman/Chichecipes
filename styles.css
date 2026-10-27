@@ -45,14 +45,14 @@ body.cooking .bricks-lit { opacity: 1; }
 
 .mantel { position: absolute; left: 50%; bottom: calc(62px * var(--hps)); width: calc(var(--wb) + 16px * var(--hps)); height: calc(8px * var(--hps)); transform: translateX(-50%); }
 .beam { position: absolute; inset: 0; background: var(--img-mantel) 0 0 / calc(16px * var(--hps)) calc(8px * var(--hps)) repeat-x; image-rendering: pixelated; box-shadow: 0 calc(2px * var(--hps)) 0 rgba(0, 0, 0, .4); }
-.cndl { position: absolute; bottom: 100%; background-repeat: no-repeat; image-rendering: pixelated; animation: candleFrames .8s steps(2) infinite; }
+.cndl { position: absolute; bottom: 100%; background-repeat: no-repeat; image-rendering: pixelated; animation: candleFrames .7s steps(2) infinite; }
 .cndl::before { content: ''; position: absolute; left: 50%; top: calc(3px * var(--hps)); width: calc(44px * var(--hps)); height: calc(44px * var(--hps)); margin: calc(-22px * var(--hps)) 0 0 calc(-22px * var(--hps)); background: radial-gradient(circle, rgba(255, 200, 100, .5), rgba(255, 160, 60, .14) 50%, transparent 72%); animation: twinkle 2.6s ease-in-out infinite; pointer-events: none; }
-.cndl.tall { width: calc(7px * var(--hps)); height: calc(23px * var(--hps)); background-image: var(--img-candle-tall); background-size: calc(14px * var(--hps)) calc(23px * var(--hps)); }
-.cndl.mid { width: calc(6px * var(--hps)); height: calc(19px * var(--hps)); background-image: var(--img-candle-mid); background-size: calc(12px * var(--hps)) calc(19px * var(--hps)); }
-.cndl.stub { width: calc(9px * var(--hps)); height: calc(16px * var(--hps)); background-image: var(--img-candle-stub); background-size: calc(18px * var(--hps)) calc(16px * var(--hps)); }
+.cndl.tall { --cw: 7; width: calc(7px * var(--hps)); height: calc(23px * var(--hps)); background-image: var(--img-candle-tall); background-size: calc(14px * var(--hps)) calc(23px * var(--hps)); }
+.cndl.mid { --cw: 6; width: calc(6px * var(--hps)); height: calc(19px * var(--hps)); background-image: var(--img-candle-mid); background-size: calc(12px * var(--hps)) calc(19px * var(--hps)); }
+.cndl.stub { --cw: 9; width: calc(9px * var(--hps)); height: calc(16px * var(--hps)); background-image: var(--img-candle-stub); background-size: calc(18px * var(--hps)) calc(16px * var(--hps)); }
 .cndl.c1 { left: 4%; } .cndl.c2 { left: calc(4% + 10px * var(--hps)); animation-delay: -.3s; } .cndl.c3 { right: calc(4% + 10px * var(--hps)); animation-delay: -.5s; } .cndl.c4 { right: 4%; animation-delay: -.2s; }
 .cndl.c2::before { animation-delay: -1s; } .cndl.c3::before { animation-delay: -.5s; } .cndl.c4::before { animation-delay: -1.7s; }
-@keyframes candleFrames { to { background-position-x: 100%; } }
+@keyframes candleFrames { to { background-position-x: calc(var(--cw) * -2px * var(--hps)); } }
 @keyframes twinkle { 0%, 100% { opacity: .7; } 50% { opacity: 1; } }
 
 /* the sleepy spider */
@@ -98,11 +98,24 @@ body.cooking .glow-wrap { opacity: 1; }
 @keyframes pulse { from { opacity: .8; } to { opacity: 1; } }
 
 /* ───────────── header ───────────── */
-.top { position: relative; z-index: 2; display: flex; align-items: flex-end; justify-content: center; gap: clamp(4px, 1.4vw, 14px); padding: 58px 16px 0; }
-.logo {
-  margin: 0; font-family: var(--pixel); font-weight: 700; font-size: clamp(2.3rem, 9.4vw, 4.2rem); line-height: 1; letter-spacing: .01em; padding-bottom: .1em;
-  color: #ffe9b8; text-shadow: 0 4px 0 #6a3414, 0 0 22px rgba(255, 170, 80, .5), 0 0 60px rgba(255, 140, 50, .25);
+.top { position: relative; z-index: 2; display: flex; align-items: flex-end; justify-content: center; gap: clamp(4px, 1.4vw, 14px); padding: 62px 16px 0; }
+.sign {
+  position: relative; margin: 0; padding: calc(4px * var(--hps)) calc(8px * var(--hps)) calc(5px * var(--hps));
+  font-family: var(--pixel); font-weight: 700; font-size: clamp(1.7rem, 7.2vw, 4.2rem); line-height: 1; letter-spacing: .02em; color: #f6e2b0;
+  text-shadow: 0 3px 0 #3a1e0c, 3px 0 0 #3a1e0c, -3px 0 0 #3a1e0c, 0 -3px 0 #3a1e0c, 3px 3px 0 #3a1e0c, -3px 3px 0 #3a1e0c, 0 6px 0 rgba(20, 8, 2, .55);
+  background: var(--img-mantel) 0 0 / calc(16px * var(--hps)) calc(8px * var(--hps)); image-rendering: pixelated;
+  box-shadow: inset 0 0 0 4px #1d0f07, inset 0 0 0 8px #5a3720, inset 0 -10px 0 8px rgba(20, 8, 2, .25);
+  transform-origin: 50% 0; animation: signSway 6s ease-in-out infinite;
 }
+.sign::before { /* iron nails */
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(#b4b2c0, #b4b2c0) 12px 12px / 6px 6px no-repeat, linear-gradient(#b4b2c0, #b4b2c0) calc(100% - 12px) 12px / 6px 6px no-repeat,
+    linear-gradient(#8a8898, #8a8898) 12px calc(100% - 12px) / 6px 6px no-repeat, linear-gradient(#8a8898, #8a8898) calc(100% - 12px) calc(100% - 12px) / 6px 6px no-repeat;
+}
+.chain { position: absolute; bottom: 100%; width: 8px; height: 70px; margin-bottom: -2px; background: repeating-linear-gradient(#8f8da0 0 4px, #3c3a48 4px 6px, #6b697c 6px 10px, #2a2834 10px 12px); box-shadow: 0 2px 0 rgba(0, 0, 0, .35); clip-path: none; }
+.chain.l { left: 14%; } .chain.r { right: 14%; }
+@keyframes signSway { 0%, 100% { transform: rotate(-.7deg); } 50% { transform: rotate(.7deg); } }
 .cat { position: relative; flex: none; width: calc(31px * var(--cps)); height: calc(25px * var(--cps)); background-image: var(--img-cat); background-size: calc(62px * var(--cps)) calc(25px * var(--cps)); animation: catFrames 1.4s steps(2) infinite; filter: drop-shadow(0 4px 0 rgba(15, 6, 0, .5)); cursor: pointer; margin-bottom: 2px; }
 .cat:hover { animation-duration: .5s; }
 @keyframes catFrames { to { background-position-x: calc(-62px * var(--cps)); } }
@@ -284,3 +297,7 @@ img.orn { display: block; width: calc(40px * var(--dps)); max-width: 72%; height
 .shelf-arrow.down { bottom: -6px; animation: nudgeDown 1.2s steps(2) infinite; }
 @keyframes nudgeUp { 50% { transform: translateY(-4px); } }
 @keyframes nudgeDown { 50% { transform: translateY(4px); } }
+
+@media (max-width: 520px) {
+  .top { justify-content: flex-start; padding-left: 14px; padding-right: 96px; gap: 6px; }
+}
