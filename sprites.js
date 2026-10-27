@@ -172,9 +172,17 @@ window.Sprites = (() => {
     return url(c);
   }
 
-  /* ───────── ink pot + quill ───────── */
+  /* ───────── ink pot + quill: a faceted gemstone pot and a quill to match ───────── */
+  const GEMS = {
+    emerald:  { tones: ['#7ff0b0', '#2fbf7a', '#1a8f5a', '#0f5f3d', '#073a26'], shine: '#d6ffe8', dark: '#073a26' },
+    ruby:     { tones: ['#ff9aa8', '#e8334f', '#b01a38', '#780f27', '#4a0818'], shine: '#ffd6dc', dark: '#4a0818' },
+    sapphire: { tones: ['#9fc2ff', '#3f78e0', '#2552b8', '#173a85', '#0c2255'], shine: '#dbe8ff', dark: '#0c2255' },
+    amethyst: { tones: ['#e0b4ff', '#a45ee0', '#7d3bb8', '#582787', '#361455'], shine: '#f1dcff', dark: '#361455' },
+    crystal:  { tones: ['#ffffff', '#cdeefc', '#9cd0ea', '#6fa7c8', '#4a7c9e'], shine: '#ffffff', dark: '#3a6384' },
+  };
   const WELL_W = 22, WELL_H = 18;
-  function well() {
+  function well(gem = 'sapphire') {
+    const g = GEMS[gem], T = g.tones;
     const [bc, bx] = make(WELL_W, WELL_H);
     for (let py = 2; py <= 6; py++) for (let px = 0; px < WELL_W; px++) {
       const dx = (px + 0.5 - 11) / 6.2, dy = (py + 0.5 - 4.5) / 2.4;
@@ -187,36 +195,58 @@ window.Sprites = (() => {
       const hw = py < 8 ? 6 : Math.round(6 + Math.min(1, (py - 7) / 3) * 4.5 - (t > 0.8 ? (t - 0.8) * 8 : 0));
       for (let px = 11 - hw; px < 11 + hw; px++) {
         const u = (px - (11 - hw)) / (2 * hw);
-        let col = '#25346f';
-        if (u < 0.22) col = '#4a62b0'; else if (u < 0.4) col = '#33478c'; else if (u > 0.75) col = '#17204a';
-        if (t > 0.85) col = '#111838';
+        // vertical facets, each a flat tone, with a diagonal facet line cutting across them
+        let col = u < 0.16 ? T[0] : u < 0.36 ? T[1] : u < 0.6 ? T[2] : u < 0.82 ? T[3] : T[4];
+        if (py >= 7 && py <= 8) col = u < 0.5 ? T[0] : T[1];
+        if (t > 0.1 && (px + py) % 8 === 0) col = u < 0.5 ? T[0] : T[1];
+        if (t > 0.85) col = T[4];
         dot(fx, 0, px, py, col);
       }
     }
     for (let px = 5; px < 17; px++) { dot(fx, 0, px, 5, '#f0c66a'); dot(fx, 0, px, 6, px < 8 ? '#e2b04c' : '#b07d25'); }
-    [[3, 10], [3, 11], [4, 13], [5, 14]].forEach(([px, py]) => dot(fx, 0, px, py, '#9fb6f0'));
-    dot(fx, 0, 4, 9, '#cfdcff');
-    outline(fc, fx, '#05070e');
+    [[4, 9], [3, 11], [4, 13], [5, 14], [16, 10]].forEach(([px, py]) => dot(fx, 0, px, py, g.shine));
+    dot(fx, 0, 4, 10, g.shine); dot(fx, 0, 9, 8, g.shine); dot(fx, 0, 8, 8, g.shine);
+    outline(fc, fx, g.dark);
     return { back: url(bc), front: url(fc) };
   }
 
   const QUILL_W = 11, QUILL_H = 54;
-  function quill() {
+  const QUILLS = {
+    emerald:  { light: '#9af0c0', mid: '#34c27f', dark: '#1a7a52', barb: '#116040', shaft: '#e6c35a' },
+    ruby:     { light: '#ffa4b2', mid: '#e8334f', dark: '#9a1730', barb: '#6e0f24', shaft: '#e6c35a' },
+    sapphire: { light: '#b0cdff', mid: '#4a82e6', dark: '#2a56b8', barb: '#1c3f8c', shaft: '#e6c35a' },
+    amethyst: { light: '#ebc8ff', mid: '#b070e8', dark: '#7a3ab4', barb: '#56278a', shaft: '#e6c35a' },
+    crystal:  { light: '#ffffff', mid: '#d8f2ff', dark: '#a6d4ec', barb: '#7fb4d2', shaft: '#d8e8f2' },
+  };
+  function quill(gem = 'sapphire') {
+    const q = QUILLS[gem], g = GEMS[gem], r = rng(gem.length * 31);
     const [c, x] = make(QUILL_W, QUILL_H);
     const vane = 38;
     for (let py = 0; py < vane; py++) {
       const t = py / vane, hw = 5 * Math.pow(Math.sin(Math.PI * Math.pow(Math.min(1, (t + 0.03)), 0.8)), 0.85);
+      const reach = Math.max(1, Math.round(hw));
       for (let px = 5 - Math.round(hw * 0.9); px <= 5 + Math.round(hw); px++) {
         if (px === 5) continue;
-        const barb = (px + py) % 3 === 0;
-        dot(x, 0, px, py, barb ? '#e4d3aa' : px < 5 ? '#f4ebd2' : '#fdf7e6');
+        const e = Math.abs(px - 5) / reach;
+        let col = e > 0.8 ? q.dark : px < 5 ? q.mid : q.light;
+        if ((px + py) % 3 === 0) col = e > 0.8 ? q.barb : q.dark === col ? q.barb : q.mid;
+        if (e < 0.4 && (px + py) % 3 !== 0) col = q.light;
+        dot(x, 0, px, py, col);
       }
     }
-    for (let py = 0; py < 50; py++) dot(x, 0, 5, py, py > 34 ? '#cdab68' : '#d8c08c');
-    dot(x, 0, 5, 50, '#cdab68'); dot(x, 0, 5, 51, '#14100d'); dot(x, 0, 5, 52, '#14100d');
-    outline(c, x, '#6f5a38');
+    // a jewelled "eye" near the tip of the plume
+    [[7, 10], [8, 10], [7, 11], [8, 11], [7, 9], [8, 9]].forEach(([px, py]) => dot(x, 0, px, py, q.barb));
+    dot(x, 0, 7, 10, g.shine); dot(x, 0, 8, 10, q.light);
+    if (gem === 'crystal') for (let i = 0; i < 7; i++) dot(x, 0, 2 + Math.floor(r() * 7), 3 + Math.floor(r() * 30), '#ffffff');
+    // gold-set gem on the shaft
+    for (let py = 0; py < 50; py++) dot(x, 0, 5, py, py > 34 ? '#c9a24a' : q.shaft);
+    [[4, 41], [5, 41], [6, 41], [4, 42], [6, 42], [4, 43], [5, 43], [6, 43]].forEach(([px, py]) => dot(x, 0, px, py, '#f0c66a'));
+    dot(x, 0, 5, 42, g.tones[0]);
+    dot(x, 0, 5, 50, '#c9a24a'); dot(x, 0, 5, 51, '#14100d'); dot(x, 0, 5, 52, '#14100d');
+    outline(c, x, g.dark);
     return url(c);
   }
+  const GEM_NAMES = Object.keys(GEMS);
 
   /* ───────── recipe doodles ───────── */
   function iceCream() {
@@ -517,6 +547,6 @@ window.Sprites = (() => {
     return url(c);
   }
 
-  return { bricksDusk, bricksLit, wallDusk2, wallLit2, mantelTile, surround, firebox, candle, web, spider, cat, pot, fire, logs, well, quill, iceCream, mug, pin, corner, flourish, blot, wallDusk, wallLit, rng, make, dot,
+  return { GEM_NAMES, bricksDusk, bricksLit, wallDusk2, wallLit2, mantelTile, surround, firebox, candle, web, spider, cat, pot, fire, logs, well, quill, iceCream, mug, pin, corner, flourish, blot, wallDusk, wallLit, rng, make, dot,
     size: { cat: [CAT_W, CAT_H], pot: [POT_W, POT_H], fire: [FIRE_W, FIRE_H], logs: [LOGS_W, LOGS_H], well: [WELL_W, WELL_H], quill: [QUILL_W, QUILL_H] } };
 })();

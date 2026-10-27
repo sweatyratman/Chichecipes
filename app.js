@@ -74,7 +74,8 @@
 
   function loadSprites() {
     IMG.cat = S.cat(); IMG.pot = S.pot(); IMG.fire = S.fire(); IMG.fireLow = S.fire(true); IMG.logs = S.logs();
-    IMG.well = S.well(); IMG.quill = S.quill(); IMG.pin = S.pin(); IMG.flourish = S.flourish(); IMG.blot = S.blot();
+    IMG.wells = {}; IMG.quills = {};
+    S.GEM_NAMES.forEach(g => { IMG.wells[g] = S.well(g); IMG.quills[g] = S.quill(g); }); IMG.pin = S.pin(); IMG.flourish = S.flourish(); IMG.blot = S.blot();
     IMG.corner = S.corner();
     IMG.blots = [11, 23, 37, 51].map(sd => S.blot(sd));
     IMG.doodles = { iceCream: { src: S.iceCream(), w: 26 }, mug: { src: S.mug(), w: 26 } };
@@ -119,6 +120,12 @@
       ring: r() < 0.7 ? { x: 12 + r() * 60, y: 22 + r() * 56, d: 64 + r() * 70, o: 0.35 + r() * 0.35, rot: Math.floor(r() * 360) } : null,
       crease: r() < 0.55 ? { h: r() < 0.5, pos: 22 + r() * 56 } : null,
     };
+  }
+  /** Each recipe gets its own gemstone inkwell (and a quill to match). */
+  function gemFor(id) {
+    let h = 5381;
+    for (const ch of id) h = ((h << 5) + h + ch.charCodeAt(0)) >>> 0;
+    return S.GEM_NAMES[h % S.GEM_NAMES.length];
   }
   function applyWear(el, w) {
     el.style.setProperty('--tone', w.tone); el.style.setProperty('--bx', w.bx); el.style.setProperty('--by', w.by); el.style.setProperty('--ba', w.ba);
@@ -368,6 +375,7 @@
     };
 
     quill.style.willChange = 'transform';
+    well.classList.add('busy');
     let ok = await travel({ ...at(0), a: WRITE_A }, 650, 70);
     if (ok) {
       btn.classList.add('crossed');
@@ -379,6 +387,7 @@
     job.cancelled = false; // always return the quill to its pot
     await travel({ ...REST }, 700, 60);
     quill.style.willChange = '';
+    if (!queue.length) well.classList.remove('busy');
   }
 
   async function pump() {
@@ -516,10 +525,11 @@
     stage.tabIndex = -1;
     applyWear($('.page', stage), wearFor(r.id));
     stage.append(buildInner(r));
+    const gem = gemFor(r.id);
     const tools = document.createElement('div');
     tools.className = 'tools';
     tools.innerHTML = `<button class="well" type="button" aria-label="Ink pot: wipe away all the crossed-out ink">
-        <img class="wback" alt="" src="${IMG.well.back}"><div class="quill"><img alt="" src="${IMG.quill}"></div><img class="wfront" alt="" src="${IMG.well.front}">
+        <img class="wback" alt="" src="${IMG.wells[gem].back}"><div class="quill"><img alt="" src="${IMG.quills[gem]}"></div><img class="wfront" alt="" src="${IMG.wells[gem].front}">
       </button>`;
     tools.append(buildScalebar(r));
     $('.well', tools).addEventListener('click', resetInk);
